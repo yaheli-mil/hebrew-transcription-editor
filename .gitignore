@@ -1,0 +1,32 @@
+# Never published: recordings, transcripts and the speech model.
+*.m4a
+*.mp3
+*.wav
+*.mp4
+*.mov
+*.m4v
+*.ogg
+*.opus
+*.webm
+*.flac
+*.aac
+*.amr
+*.3gp
+*.wma
+*.mkv
+*.avi
+הקלטות/
+.data/
+port.txt
+.welcomed
+src/model/
+
+# Build output (the installer is ~1.7 GB).
+dist/
+src/installer/build/
+__pycache__/
+*.pyc
+
+# Fonts whose licences do not allow sharing them here (the editor falls back to Noto Sans Hebrew / Consolas).
+src/app/fonts/Yarden-*.otf
+src/app/fonts/CascadiaMono.ttf
