@@ -28,7 +28,7 @@ MAX_UPLOAD = 6 * 1024 ** 3
 CSP = ("default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; "
        "connect-src 'self'; media-src 'self'; img-src 'self' data:; font-src 'self'; base-uri 'none'; form-action 'none'")
 FONT_TYPES = {".ttf": "font/ttf", ".otf": "font/otf", ".woff2": "font/woff2"}
-DATA_SUFFIXES = (".words.json", ".env.u8", ".sync.json", ".progress.json", ".job.json", ".error.json", ".codes.json")
+DATA_SUFFIXES = (".words.json", ".env.u8", ".sync.json", ".progress.json", ".job.json", ".error.json", ".codes.json", ".notes.json")
 BAD_CHARS = re.compile(r'[<>:"/\\|?*\x00-\x1f]')
 
 
@@ -229,6 +229,8 @@ class Handler(BaseHTTPRequestHandler):
             elif url.path == "/api/doc":
                 doc = core.load_doc(name)
                 self._json(doc) if doc else self._json({"error": "no_txt"}, 404)
+            elif url.path == "/api/notes":
+                self._json({"notes": core.read_notes(name)})
             elif url.path == "/api/codes":
                 self._json({"codes": core.read_codes(name)})
             elif url.path == "/api/peaks":
@@ -338,6 +340,8 @@ class Handler(BaseHTTPRequestHandler):
                 core.error_path(name).unlink(missing_ok=True)
                 QUEUE.wake.set()
                 return self._json({"ok": True})
+            if url.path == "/api/notes":
+                return self._json({"saved": core.save_notes(name, req.get("notes"))})
             if url.path == "/api/codes":
                 return self._json({"saved": core.save_codes(name, req.get("codes"))})
             if url.path != "/api/save":

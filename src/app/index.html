@@ -33,6 +33,7 @@
   --warn: #b4520b; --warn-soft: #fff0dd;
   --bad: #be2550; --bad-soft: #ffe4eb;
   --ok: #1e8a4b; --ok-soft: #e2f5ea;
+  --k-check: #b4520b; --k-speaker: #5847e0; --k-quote: #11865d; --k-insight: #0b7a99; --k-general: #5b6475;
   --k-check: #b4520b; --k-id: #1f6feb; --k-sensitive: #c8305f; --k-speaker: #5847e0; --k-quote: #11865d; --k-insight: #0b7a99;
   --shadow-1: 0 1px 2px rgba(18, 20, 28, .06), 0 0 0 1px rgba(18, 20, 28, .03);
   --shadow-2: 0 18px 40px -16px rgba(18, 20, 28, .28), 0 2px 8px rgba(18, 20, 28, .06);
@@ -49,6 +50,7 @@
     --warn: #f2a65a; --warn-soft: #33220f;
     --bad: #ff7f9c; --bad-soft: #3a1622;
     --ok: #4cc27f; --ok-soft: #12301f;
+    --k-check: #f2a65a; --k-speaker: #a093ff; --k-quote: #3fd49a; --k-insight: #5cc9e6; --k-general: #aab1c2;
     --k-check: #f2a65a; --k-id: #6aa7ff; --k-sensitive: #ff7aa2; --k-speaker: #a093ff; --k-quote: #3fd49a; --k-insight: #5cc9e6;
     --shadow-1: 0 1px 2px rgba(0, 0, 0, .45), 0 0 0 1px rgba(255, 255, 255, .02);
     --shadow-2: 0 18px 40px -16px rgba(0, 0, 0, .7), 0 2px 8px rgba(0, 0, 0, .3);
@@ -65,6 +67,7 @@
   --warn: #f2a65a; --warn-soft: #33220f;
   --bad: #ff7f9c; --bad-soft: #3a1622;
   --ok: #4cc27f; --ok-soft: #12301f;
+    --k-check: #f2a65a; --k-speaker: #a093ff; --k-quote: #3fd49a; --k-insight: #5cc9e6; --k-general: #aab1c2;
   --k-check: #f2a65a; --k-id: #6aa7ff; --k-sensitive: #ff7aa2; --k-speaker: #a093ff; --k-quote: #3fd49a; --k-insight: #5cc9e6;
   --shadow-1: 0 1px 2px rgba(0, 0, 0, .45), 0 0 0 1px rgba(255, 255, 255, .02);
   --shadow-2: 0 18px 40px -16px rgba(0, 0, 0, .7), 0 2px 8px rgba(0, 0, 0, .3);
@@ -281,6 +284,78 @@ button { font: inherit; color: inherit; }
 .txt:focus { background: color-mix(in srgb, var(--accent-soft) 55%, transparent); box-shadow: 0 0 0 8px color-mix(in srgb, var(--accent-soft) 55%, transparent); }
 .w { border-radius: 4px; transition: background-color .12s; }
 .seek .w { cursor: pointer; }
+/* --------------------------------------------------------------- margin notes */
+.canvas.has-rail { grid-template-columns: minmax(0, 860px) 300px; }
+.rail { position: relative; margin-top: 22px; }
+.ncard {
+  position: absolute; inset-inline: 0; padding: 12px 14px 10px; border-radius: 14px; cursor: pointer;
+  background: var(--panel); border: 1px solid var(--line); border-inline-start: 3px solid var(--kc); box-shadow: var(--shadow-1);
+  transition: box-shadow .15s, transform .15s;
+}
+.ncard.hot { box-shadow: var(--shadow-2); transform: translateX(-3px); }
+.nhead { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.nkind { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--kc); }
+.nat {
+  display: inline-flex; align-items: center; gap: 4px; margin-inline-start: auto; padding: 2px 8px; border: 0; border-radius: 7px;
+  background: var(--raised); font-size: 11.5px; color: var(--ink-2); cursor: pointer;
+}
+.nat:hover { background: var(--accent-soft); color: var(--accent); }
+.nat .ic { fill: currentColor; stroke-width: 1.5; width: 11px; height: 11px; }
+.ntext { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--ink-2); white-space: pre-wrap; overflow-wrap: anywhere; }
+.nfoot { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.nlost { font-size: 11.5px; color: var(--ink-3); }
+.ndone, .nedit {
+  display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 8px;
+  border: 1px solid var(--line-2); background: var(--panel); font-size: 12px; color: var(--ink-2); cursor: pointer;
+}
+.ndone { margin-inline-start: auto; }
+.ndone:hover { border-color: var(--ok); color: var(--ok); }
+.nedit:hover { border-color: var(--accent); color: var(--accent); }
+.w.noted { background: color-mix(in srgb, var(--kc) 12%, transparent); box-shadow: 0 2px 0 color-mix(in srgb, var(--kc) 65%, transparent); border-radius: 2px; }
+.w.noted.hot { background: color-mix(in srgb, var(--kc) 26%, transparent); }
+.count.notes { background: var(--accent-soft); color: var(--accent); }
+.notes { list-style: none; margin: 0; padding: 6px; overflow-y: auto; flex: 1; }
+.notes-top { display: grid; gap: 8px; padding: 10px 8px 4px; }
+.note-item {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: start; gap: 10px;
+  width: 100%; padding: 9px 10px; border: 0; border-radius: 10px; background: none; text-align: start; cursor: pointer;
+  transition: background .12s;
+}
+.note-item:hover, .note-item.hot { background: var(--hover); }
+.note-item.sel { background: var(--accent-soft); }
+.note-item.done { opacity: .5; }
+.kicon {
+  display: grid; place-items: center; width: 26px; height: 26px; border-radius: 8px;
+  background: color-mix(in srgb, var(--kc) 14%, transparent); color: var(--kc);
+}
+.note-item .nt { font-size: 13px; line-height: 1.45; color: var(--ink-2); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.note-item .nt b { display: block; font-size: 12px; font-weight: 600; color: var(--kc); }
+.note-item .at { font-size: 11.5px; color: var(--ink-3); padding-top: 2px; }
+.reopen { border: 0; background: none; padding: 0; font-size: 12px; color: var(--accent); cursor: pointer; text-decoration: underline; }
+.noteform { display: grid; gap: 10px; padding: 12px; border: 1px solid var(--line-2); border-radius: 12px; background: var(--raised); }
+.noteform .nquote { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--ink-3); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.noteform textarea {
+  width: 100%; min-height: 84px; padding: 8px 10px; border: 1px solid var(--line-2); border-radius: 9px; background: var(--panel);
+  color: var(--ink); font: inherit; font-size: 14px; line-height: 1.55; resize: vertical;
+}
+.kindpick { display: flex; flex-wrap: wrap; gap: 6px; }
+.kindpick button {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid var(--line-2); border-radius: 999px;
+  background: var(--panel); color: var(--ink-2); font-size: 12.5px; cursor: pointer;
+}
+.kindpick button .ic { color: var(--kc); }
+.kindpick button[aria-pressed="true"] { border-color: var(--kc); background: color-mix(in srgb, var(--kc) 14%, var(--panel)); color: var(--ink); font-weight: 600; }
+.noteform .frow { display: flex; gap: 8px; }
+.noteform .frow button { border: 1px solid var(--line-2); border-radius: 9px; background: var(--panel); padding: 5px 12px; font-size: 13px; cursor: pointer; }
+.noteform .frow .fsave { background: var(--accent-hi); border-color: var(--accent-lo); color: var(--on-accent); font-weight: 600; }
+.noteform .frow .fdel { margin-inline-start: auto; color: var(--bad); }
+[data-kind="check"] { --kc: var(--k-check); }
+[data-kind="speaker"] { --kc: var(--k-speaker); }
+[data-kind="quote"] { --kc: var(--k-quote); }
+[data-kind="insight"] { --kc: var(--k-insight); }
+[data-kind="general"] { --kc: var(--k-general); }
+.review:has(.notes-top:not([hidden])) { min-height: 440px; flex: none; }
+
 /* --------------------------------------------------------------- coding (colour highlights marked by hand) */
 .w.coded {
   background: light-dark(color-mix(in srgb, var(--cc) 46%, transparent), color-mix(in srgb, var(--cc) 44%, transparent));
@@ -546,6 +621,8 @@ body.home .tabs { display: none; }
 .dropzone .ic { color: var(--accent); width: 26px; height: 26px; }
 
 @media (max-width: 1100px) {
+  .canvas.has-rail { grid-template-columns: minmax(0, 860px); }
+  .rail { display: none; }                      /* too narrow for notes beside the page: they stay in the list and underlined in the text */
   .deck { width: 330px; padding: 14px; }
   .page { padding: 36px 36px 48px; margin-top: 16px; }
   .turn { grid-template-columns: 108px minmax(0, 1fr); column-gap: 20px; }
@@ -655,6 +732,7 @@ body.home .tabs { display: none; }
       <header class="review-head">
         <div class="seg panes" role="tablist" aria-label="מה להציג">
           <button type="button" role="tab" id="tabSpots" aria-selected="true"><svg class="ic xs" aria-hidden="true"><use href="#i-list-checks"/></svg>לבדיקה<span class="count mono" id="spotCount">0</span></button>
+          <button type="button" role="tab" id="tabNotes" aria-selected="false"><svg class="ic xs" aria-hidden="true"><use href="#i-message-square-text"/></svg>הערות<span class="count notes mono" id="noteCount" hidden>0</span></button>
           <button type="button" role="tab" id="tabCodes" aria-selected="false"><svg class="ic xs" aria-hidden="true"><use href="#i-highlighter"/></svg>קידוד<span class="count codes mono" id="codeCount" hidden>0</span></button>
         </div>
         <div class="nav">
@@ -668,6 +746,12 @@ body.home .tabs { display: none; }
       </header>
       <ol class="spots" id="spots"></ol>
       <p class="spots-empty" id="spotsEmpty" hidden><b>הכול נבדק</b>אין בתמלול הזה מילים מסומנות.</p>
+      <div class="notes-top" id="notesTop" hidden>
+        <p class="codes-hint">בוחרים טקסט בתמלול ולוחצים על "הוספת הערה". ההערות מופיעות בצד הדף, ומיוצאות כהערות בקובץ ה-Word.</p>
+        <form class="noteform" id="noteForm" hidden></form>
+      </div>
+      <ol class="notes" id="notes" hidden></ol>
+      <p class="spots-empty" id="notesEmpty" hidden><b>אין הערות</b>עוד לא נכתבו הערות לריאיון הזה.</p>
       <div class="codes-pane" id="codesPane" hidden>
         <p class="codes-hint" id="codesHint">בוחרים טקסט בעכבר ואז קטגוריה בסרגל (או <kbd>Alt</kbd> + מספר). לחיצה על קטע מסומן: שינוי או הסרה.</p>
         <div class="codes-tools">
@@ -679,7 +763,7 @@ body.home .tabs { display: none; }
         <button class="cat-add" id="catAdd" type="button"><svg class="ic xs" aria-hidden="true"><use href="#i-plus"/></svg>קטגוריה חדשה</button>
         <div class="codes-tools"><b>הקטעים המסומנים</b>
           <button class="cx-copy" id="codeCopy" type="button" title="מעתיק את התמלול עם הסימונים בצבעים, להדבקה ב-Word או ב-Docs"><svg class="ic xs" aria-hidden="true"><use href="#i-copy"/></svg><span>העתקה עם צבעים</span></button>
-          <button class="cx-copy" id="codeSaveDoc" type="button" title="שומר קובץ Word עם הסימונים בצבעים. ב-Google Drive: העלאה ופתיחה באמצעות Google Docs"><svg class="ic xs" aria-hidden="true"><use href="#i-copy"/></svg><span>ל-Google Docs</span></button>
+          <button class="cx-copy" id="codeSaveDoc" type="button" title="שומר קובץ Word עם הסימונים בצבעים וההערות בצד כהערות. ב-Google Drive: העלאה ופתיחה באמצעות Google Docs"><svg class="ic xs" aria-hidden="true"><use href="#i-copy"/></svg><span>ל-Google Docs</span></button>
         </div>
         <ol class="cxs" id="cxs"></ol>
         <p class="cx-empty" id="cxEmpty" hidden>עוד לא סומן כלום בריאיון הזה.</p>
@@ -705,6 +789,7 @@ body.home .tabs { display: none; }
       </header>
       <div class="doc" id="doc"></div>
     </article>
+    <aside class="rail" id="rail" aria-label="הערות" hidden></aside>
     </div>
     <button class="follow" id="follow" type="button" hidden>
       <svg class="ic" aria-hidden="true"><use href="#i-locate-fixed"/></svg>
@@ -820,6 +905,7 @@ body.home .tabs { display: none; }
 
 <div class="dropzone" id="dropzone" hidden><div><svg class="ic" aria-hidden="true"><use href="#i-upload"/></svg>שחררו כדי להוסיף את ההקלטה</div></div>
 
+<div class="codebar" id="notebar" role="toolbar" aria-label="הוספת הערה" hidden><button type="button"><svg class="ic xs" aria-hidden="true"><use href="#i-message-square-text"/></svg>הוספת הערה</button></div>
 <div class="codebar" id="codebar" role="toolbar" aria-label="קטגוריות לסימון" hidden></div>
 
 <audio id="audio" preload="metadata"></audio>
@@ -1071,6 +1157,7 @@ function reindex() {
   S.flat = flat; S.spots = spots; S.segs = segs; S.waveDirty = true;
   docEl.classList.toggle('seek', opts.seek && flat.length > 0);
   renderSpots();
+  renderNotes();
   renderCodes();
   paint();
 }
@@ -1507,8 +1594,7 @@ function renderSpots() {
     return el('li').appendChild(btn).parentNode;
   });
   list.replaceChildren(...items);
-  const codes = S.pane === 'codes';
-  list.hidden = !n || codes; $('spotsEmpty').hidden = !!n || !S.doc || codes;
+  showPane();
   $('spotCount').textContent = n; $('spotCount').classList.toggle('done', !n);
   $('spotPrev').disabled = $('spotNext').disabled = !n;
   const tab = S.tabs.get(S.name);
@@ -1550,7 +1636,7 @@ $('spots').addEventListener('click', ev => {
 });
 $('spotNext').onclick = () => step(1);
 $('spotPrev').onclick = () => step(-1);
-function step(dir) { if (S.pane === 'codes') stepCode(dir); else gotoSpot(dir); }
+function step(dir) { if (S.pane === 'codes') stepCode(dir); else if (S.pane === 'notes') stepNote(dir); else gotoSpot(dir); }
 
 /* ----------------------------------------------------- recordings, tabs */
 const STAGES = { prepare: 'מכין את הקובץ', load: 'טוען את מודל התמלול', transcribe: 'מתמלל', speakers: 'מזהה מי מדבר' };
@@ -1594,7 +1680,8 @@ function showMeta() {
   wave.setAttribute('aria-valuemax', Math.floor(d));
   $('docTitle').textContent = S.name || '';
   $('docMeta').textContent = doc ? [d ? fmt(d) + ' דקות' : '', doc.turns.length + ' קטעי דיבור', words.toLocaleString('he-IL') + ' מילים',
-    S.spots.length ? S.spots.length + ' מקומות לבדיקה' : 'הכול נבדק'].filter(Boolean).join('  ·  ') : '';
+    S.spots.length ? S.spots.length + ' מקומות לבדיקה' : 'הכול נבדק',
+    S.notes.some(n => !n.done) ? S.notes.filter(n => !n.done).length + ' הערות' : ''].filter(Boolean).join('  ·  ') : '';
   $('legend').replaceChildren(...(doc ? S.speakers.filter(sp => doc.turns.some(t => t.sp === sp)).map(sp => el('span', RE_INT.test(sp) ? 'int' : '', sp)) : []));
   $('pageActions').hidden = !doc;
   document.title = S.name ? `${S.name} · עורך תמלול` : 'עורך תמלול';
@@ -1711,10 +1798,12 @@ async function openRec(name) {
   S.doc = null; S.peaks = null; S.els.clear(); S.flat = []; S.spots = []; S.segs = []; S.jobKey = null;
   S.activeEl = S.activeTurn = null; S.dirty = false; S.conflict = false; S.shownSec = -1; S.posReady = false;
   S.codes = []; S.codeAt = new Map(); S.codeCur = null; S.codeUndo = []; S.codeFilter = null; S.codeDirty = false; hideBar();
+  S.notes = []; S.notesRaw = ''; S.noteCur = null; S.noteHot = null; S.noteEdit = null; hideNoteBar();
   docEl.replaceChildren(); $('notice').hidden = true; setSave(''); sheet.scrollTop = 0;
   setAudio(name);
   renderTabs(); showMeta(); drawWave(true);
   loadCodes(name);
+  loadNotes(name);
   await loadDoc();
 }
 /* Recordings in formats a browser cannot play are converted first: wait for that before loading the sound. */
@@ -1913,6 +2002,257 @@ $('sizeUp').onclick = () => setPref('size', Math.min(28, prefs.size + 1));
 $('optSeek').checked = opts.seek; $('optHold').checked = opts.hold;
 $('optSeek').onchange = ev => { opts.seek = ev.target.checked; store.set('seek', opts.seek); docEl.classList.toggle('seek', opts.seek && S.flat.length > 0); };
 $('optHold').onchange = ev => { opts.hold = ev.target.checked; store.set('hold', opts.hold); if (!opts.hold) releaseHold(); };
+
+/* --------------------------------------------------------------- margin notes */
+/* The user writes notes about passages of the transcript. A note is stored with the words of its passage plus a
+   hint of where it was (turn), and is found again by its words, so edits around it do not lose it. */
+const KINDS = {
+  check: { label: 'לבדוק בהקלטה', icon: 'ear' },
+  speaker: { label: 'שיוך דובר', icon: 'users' },
+  quote: { label: 'ציטוט', icon: 'quote' },
+  insight: { label: 'תובנה', icon: 'lightbulb' },
+  general: { label: 'הערה', icon: 'message-square-text' },
+};
+Object.assign(S, { notes: [], notesRaw: '', anchors: new Map(), noteCur: null, noteHot: null, noteEdit: null });
+Object.assign(api, { notes: async name => (await getJSON('/api/notes?name=' + encodeURIComponent(name))).notes });
+const newNoteId = () => 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+
+/* Where a note's quoted passage is now: matched word by word, ignoring punctuation and "(?)" marks. */
+function findQuote(turn, quote) {
+  const q = quote.split(/\s+/).map(normTok).filter(Boolean), tn = turn.w.map(w => normTok(w.t));
+  if (!q.length) return null;
+  for (let i = 0; i < tn.length; i++) {
+    if (tn[i] !== q[0]) continue;
+    let k = 0, j = i, last = i;
+    while (j < tn.length && k < q.length) { if (!tn[j]) { j++; continue; } if (tn[j] !== q[k]) break; last = j; k++; j++; }
+    if (k === q.length) return [i, last];
+  }
+  return null;
+}
+function anchorNotes() {
+  const turns = S.doc ? S.doc.turns : [], out = new Map();
+  for (const n of S.notes) {
+    if (!turns.length) break;
+    const hint = Math.min(Math.max(0, n.turn || 0), turns.length - 1);
+    let found = null;
+    for (let d = 0; d < turns.length && !found; d++) {
+      for (const ti of d ? [hint - d, hint + d] : [hint]) {
+        if (ti < 0 || ti >= turns.length) continue;
+        const r = findQuote(turns[ti], n.quote || '');
+        if (r) { found = { turn: turns[ti], from: r[0], to: r[1] }; break; }
+      }
+    }
+    out.set(n.id, found || { turn: turns[hint], from: null, to: null, lost: true });
+  }
+  S.anchors = out;
+}
+function noteTime(n) {
+  const a = S.anchors.get(n.id);
+  if (!a) return null;
+  const ws = a.from == null ? a.turn.w : a.turn.w.slice(a.from, a.to + 1);
+  const w = ws.find(x => x.s != null);
+  return w ? w.s : null;
+}
+function noteTarget(id) {
+  const a = S.anchors.get(id), e = a && S.els.get(a.turn.id);
+  return e ? (a.from != null && e.spans[a.from]) || e.root : null;
+}
+const noteOrder = n => { const a = S.anchors.get(n.id); return a ? turnIndex(a.turn.id) * 1e4 + (a.from || 0) : 1e9; };
+const openNotes = () => S.notes.filter(n => !n.done).sort((a, b) => noteOrder(a) - noteOrder(b));
+function renderNotes() {
+  anchorNotes();
+  for (const s of docEl.querySelectorAll('.w.noted')) { s.classList.remove('noted', 'hot'); delete s.dataset.kind; delete s.dataset.nid; }
+  const open = openNotes(), done = S.notes.filter(n => n.done).sort((a, b) => noteOrder(a) - noteOrder(b));
+  for (const n of open) {
+    const a = S.anchors.get(n.id), e = a && S.els.get(a.turn.id);
+    if (!e || a.from == null) continue;
+    for (let k = a.from; k <= a.to; k++) {
+      const s = e.spans[k];
+      if (s) { s.classList.add('noted'); s.dataset.kind = n.kind; s.dataset.nid = n.id; }
+    }
+  }
+  $('noteCount').textContent = open.length; $('noteCount').hidden = !open.length;
+  $('notes').replaceChildren(...open.concat(done).map(noteItem));
+  const rail = $('rail');
+  $('canvas').classList.toggle('has-rail', open.length > 0);
+  rail.hidden = !open.length;
+  rail.replaceChildren(...open.map(noteCard));
+  showPane();
+  if (S.noteHot) { const h = S.noteHot; S.noteHot = null; setHot(h); }
+  layoutRail();
+}
+function noteHead(n) {
+  const k = KINDS[n.kind] || KINDS.general, t = noteTime(n);
+  return { k, t, time: t == null ? null : fmt(t) };
+}
+function noteCard(n) {
+  const { k, t, time } = noteHead(n), a = S.anchors.get(n.id);
+  const card = el('div', 'ncard'), head = el('div', 'nhead'), kind = el('span', 'nkind'), foot = el('div', 'nfoot');
+  card.dataset.kind = n.kind; card.dataset.nid = n.id;
+  kind.append(icon(k.icon, 'xs'), k.label);
+  head.append(kind);
+  if (t != null) {
+    const at = el('button', 'nat mono'); at.type = 'button'; at.dataset.act = 'play'; at.title = 'השמעה מהקטע';
+    at.append(icon('play'), time); head.append(at);
+  }
+  if (a && a.lost) foot.append(el('span', 'nlost', 'הקטע השתנה מאז שנכתבה ההערה'));
+  const edit = el('button', 'nedit'); edit.type = 'button'; edit.dataset.act = 'edit'; edit.title = 'עריכת ההערה';
+  edit.append(icon('pencil', 'xs'), 'עריכה');
+  const ok = el('button', 'ndone'); ok.type = 'button'; ok.dataset.act = 'done'; ok.title = 'ההערה טופלה: להסתיר אותה';
+  ok.append(icon('check', 'xs'), 'טופל'); foot.append(edit, ok);
+  card.append(head, el('p', 'ntext', n.text), foot);
+  return card;
+}
+function noteItem(n) {
+  const { k, time } = noteHead(n), li = el('li'), b = el('button', 'note-item' + (n.done ? ' done' : '') + (S.noteCur === n.id ? ' sel' : ''));
+  const ki = el('span', 'kicon'), nt = el('span', 'nt'), side = el('span', 'at mono', time || '');
+  b.type = 'button'; b.dataset.kind = n.kind; b.dataset.nid = n.id;
+  ki.append(icon(k.icon, 'xs'));
+  nt.append(el('b', null, k.label), n.text);
+  if (n.done) { const re = el('span', 'reopen', 'להחזיר'); re.dataset.act = 'reopen'; side.replaceChildren(re); }
+  b.append(ki, nt, side); li.append(b);
+  return li;
+}
+/* Each card sits beside its passage; cards that would overlap are pushed down. */
+function layoutRail() {
+  const rail = $('rail');
+  if (rail.hidden) return;
+  const base = rail.getBoundingClientRect().top;
+  let floor = 0;
+  const cards = [...rail.children].map(c => { const tg = noteTarget(c.dataset.nid); return { c, y: tg ? tg.getBoundingClientRect().top - base - 6 : 0 }; });
+  cards.sort((a, b) => a.y - b.y);
+  for (const { c, y } of cards) { const top = Math.max(y, floor); c.style.top = top + 'px'; floor = top + c.offsetHeight + 12; }
+  rail.style.minHeight = floor + 'px';
+}
+function setHot(id) {
+  if (S.noteHot === id) return;
+  S.noteHot = id;
+  for (const x of document.querySelectorAll('.hot[data-nid]')) x.classList.remove('hot');
+  if (id) for (const x of document.querySelectorAll(`[data-nid="${id}"]`)) x.classList.add('hot');
+}
+function goNote(n) {
+  S.noteCur = n.id;
+  for (const b of $('notes').querySelectorAll('.note-item')) b.classList.toggle('sel', b.dataset.nid === n.id);
+  const t = noteTime(n), tg = noteTarget(n.id);
+  if (t != null) { releaseHold(); seek(Math.max(0, t - 1)); }
+  if (tg) keepInView(tg, true);
+  setHot(n.id);
+  for (const s of docEl.querySelectorAll(`.w[data-nid="${n.id}"]`)) { s.classList.remove('flash'); void s.offsetWidth; s.classList.add('flash'); }
+  const card = $('rail').querySelector(`.ncard[data-nid="${n.id}"]`);
+  if (card) card.scrollIntoView({ block: 'nearest' });
+}
+function stepNote(dir) {
+  const open = openNotes();
+  if (!open.length) return;
+  const i = open.findIndex(n => n.id === S.noteCur);
+  goNote(open[i < 0 ? (dir > 0 ? 0 : open.length - 1) : (i + dir + open.length) % open.length]);
+}
+let notesSaving = null;
+async function saveNotes() {
+  const name = S.name, notes = S.notes.map(n => ({ id: n.id, kind: n.kind, quote: n.quote, turn: n.turn, text: n.text, done: !!n.done }));
+  S.notesRaw = JSON.stringify(notes);
+  while (notesSaving) await notesSaving;
+  notesSaving = api.post('/api/notes', { name, notes }).catch(() => showNotice('bad', 'לא הצלחתי לשמור את ההערות. בדקו שהחלון השחור של העורך עדיין פתוח.', [['נסו שוב', () => { $('notice').hidden = true; saveNotes(); }]]));
+  await notesSaving;
+  notesSaving = null;
+}
+function setDone(n, done) { n.done = done; renderNotes(); showMeta(); saveNotes(); }
+async function loadNotes(name) {
+  try {
+    const notes = await api.notes(name);
+    if (S.name !== name) return;
+    S.notes = notes; S.notesRaw = JSON.stringify(notes.map(n => ({ id: n.id, kind: n.kind, quote: n.quote, turn: n.turn, text: n.text, done: !!n.done })));
+    if (S.doc) { renderNotes(); showMeta(); }
+  } catch {}
+}
+function noteFrom(ev) { const x = ev.target.closest('[data-nid]'); return x && S.notes.find(n => n.id === x.dataset.nid); }
+$('rail').addEventListener('click', ev => {
+  const n = noteFrom(ev);
+  if (!n) return;
+  const act = ev.target.closest('[data-act]');
+  if (act && act.dataset.act === 'done') return setDone(n, true);
+  if (act && act.dataset.act === 'edit') { setPane('notes'); return openNoteForm(n); }
+  if (act && act.dataset.act === 'play') { const t = noteTime(n); if (t != null) { releaseHold(); seek(Math.max(0, t - 0.5)); audio.play().catch(() => {}); } return; }
+  goNote(n);
+});
+$('notes').addEventListener('click', ev => {
+  const n = noteFrom(ev);
+  if (!n) return;
+  if (ev.target.closest('[data-act="reopen"]')) return setDone(n, false);
+  goNote(n);
+});
+$('rail').addEventListener('mouseover', ev => { const n = noteFrom(ev); if (n) setHot(n.id); });
+$('rail').addEventListener('mouseleave', () => setHot(null));
+docEl.addEventListener('mouseover', ev => { const s = ev.target.closest('.w.noted'); setHot(s ? s.dataset.nid : null); });
+new ResizeObserver(() => layoutRail()).observe($('page'));
+document.fonts.ready.then(() => layoutRail());
+
+/* ---- writing a note: select words in the transcript, then "הוספת הערה" */
+const noteBar = $('notebar');
+function hideNoteBar() { noteBar.hidden = true; }
+function syncNoteBar() {
+  if (S.pane !== 'notes' || S.noteEdit || !S.doc) return hideNoteBar();
+  const targets = selectedTargets();
+  if (!targets) return;
+  noteBar.hidden = false;
+  const rect = getSelection().getRangeAt(0).getBoundingClientRect(), w = noteBar.offsetWidth, h = noteBar.offsetHeight;
+  let top = rect.top - h - 10;
+  if (top < 8) top = Math.min(innerHeight - h - 8, rect.bottom + 10);
+  noteBar.style.top = top + 'px';
+  noteBar.style.left = Math.max(8, Math.min(innerWidth - w - 8, rect.left + rect.width / 2 - w / 2)) + 'px';
+}
+noteBar.addEventListener('mousedown', ev => ev.preventDefault());
+noteBar.addEventListener('click', () => {
+  const targets = selectedTargets();
+  hideNoteBar();
+  if (!targets) return;
+  const { ti, a, b } = targets[0], turn = S.doc.turns[ti], t = trimLex(turn, a, b);
+  if (!t) return;
+  getSelection().removeAllRanges();
+  openNoteForm(null, { quote: wordsText(turn, t[0], t[1]), turn: ti });
+});
+document.addEventListener('mouseup', ev => { if (!(ev.target.closest && ev.target.closest('#notebar'))) setTimeout(syncNoteBar, 0); });
+document.addEventListener('keyup', ev => { if (ev.shiftKey || ev.key.startsWith('Arrow')) syncNoteBar(); });
+document.addEventListener('selectionchange', () => { if (!noteBar.hidden && getSelection().isCollapsed) hideNoteBar(); });
+sheet.addEventListener('scroll', () => { if (!noteBar.hidden) hideNoteBar(); }, { passive: true });
+
+function openNoteForm(note, fresh) {
+  S.noteEdit = note ? { id: note.id, kind: note.kind, quote: note.quote, turn: note.turn, confirmDel: false } : { id: null, kind: 'check', quote: fresh.quote, turn: fresh.turn };
+  const form = $('noteForm'), ed = S.noteEdit;
+  const quote = el('p', 'nquote', '“' + ed.quote + '”'), pick = el('div', 'kindpick'), text = el('textarea'), row = el('div', 'frow');
+  text.value = note ? note.text : ''; text.placeholder = 'כתבו את ההערה כאן'; text.setAttribute('aria-label', 'טקסט ההערה'); text.maxLength = 4000;
+  const paintKinds = () => { for (const b of pick.children) b.setAttribute('aria-pressed', String(b.dataset.kind === ed.kind)); };
+  for (const [key, k] of Object.entries(KINDS)) {
+    const b = el('button'); b.type = 'button'; b.dataset.kind = key; b.append(icon(k.icon, 'xs'), k.label);
+    b.onclick = () => { ed.kind = key; paintKinds(); };
+    pick.append(b);
+  }
+  const save = el('button', 'fsave', 'שמירה'), cancel = el('button', null, 'ביטול');
+  save.type = cancel.type = 'button';
+  cancel.onclick = closeNoteForm;
+  save.onclick = () => commitNote(text.value);
+  row.append(save, cancel);
+  if (note) {
+    const del = el('button', 'fdel', 'מחיקה'); del.type = 'button';
+    del.onclick = () => {
+      if (!ed.confirmDel) { ed.confirmDel = true; del.textContent = 'לחיצה נוספת מוחקת'; return; }
+      S.notes = S.notes.filter(n => n.id !== ed.id); closeNoteForm(); renderNotes(); showMeta(); saveNotes();
+    };
+    row.append(del);
+  }
+  form.onsubmit = ev => { ev.preventDefault(); commitNote(text.value); };
+  form.replaceChildren(quote, pick, text, row);
+  form.hidden = false; paintKinds(); showPane(); text.focus();
+}
+function closeNoteForm() { S.noteEdit = null; $('noteForm').hidden = true; showPane(); }
+function commitNote(raw) {
+  const text = raw.trim();
+  if (!text || !S.noteEdit) return;
+  const { id, kind, quote, turn } = S.noteEdit;
+  if (id) { const n = S.notes.find(x => x.id === id); if (n) { n.kind = kind; n.text = text; } }
+  else S.notes.push({ id: newNoteId(), kind, quote, turn, text, done: false });
+  closeNoteForm(); renderNotes(); showMeta(); saveNotes();
+}
 
 /* ------------------------------------------------------------- coding */
 /* The user reads the transcript and marks passages by topic, one colour per category (the legend).
@@ -2352,16 +2692,25 @@ $('codeSaveDoc').onclick = async () => {
   const btn = $('codeSaveDoc'), label = btn.querySelector('span'), idle = label.textContent, per = S.doc.turns.map(() => new Map());
   for (const { r, cat } of codeItems()) if (r) for (let k = r.from; k <= r.to; k++) per[r.ti].set(k, cat);
   const used = new Set(S.doc.turns.flatMap((t, ti) => [...per[ti].values()].map(c => c.id)));
+  const starts = S.doc.turns.map(() => new Map()), ends = S.doc.turns.map(() => new Map()), comments = [];
+  const add = (m, i, id) => m.set(i, (m.get(i) || []).concat(id));
+  for (const n of S.notes) {                                            // each note becomes a comment on its passage
+    const a = S.anchors.get(n.id), ti = a ? turnIndex(a.turn.id) : -1;
+    if (ti < 0 || !a.turn.w.length) continue;
+    add(starts[ti], a.from == null ? 0 : a.from, n.id); add(ends[ti], a.to == null ? a.turn.w.length - 1 : a.to, n.id);
+    comments.push({ id: n.id, label: (KINDS[n.kind] || KINDS.general).label + (n.done ? ' (טופל)' : ''), text: n.text || '' });
+  }
   const payload = {
     title: 'תמלול מקודד',
-    legend: S.cats.filter(c => used.has(c.id)).map(c => ({ name: c.name, color: softColor(c.color) })),
-    turns: S.doc.turns.map((t, ti) => ({ sp: t.sp, w: t.w.map((w, i) => ({ t: w.t, c: per[ti].has(i) ? softColor(per[ti].get(i).color) : null })) })),
+    legend: S.cats.filter(c => used.has(c.id)).map(c => ({ name: c.name, color: softColor(c.color) })), comments,
+    turns: S.doc.turns.map((t, ti) => ({ sp: t.sp, w: t.w.map((w, i) => ({
+      t: w.t, c: per[ti].has(i) ? softColor(per[ti].get(i).color) : null, cs: starts[ti].get(i) || [], ce: ends[ti].get(i) || [] })) })),
   };
   try {
     const r = await fetch('/api/docx', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     if (!r.ok) throw new Error(r.status);
     download('תמלול מקודד - ' + S.name + '.docx', 'application/octet-stream', await r.blob());
-    label.textContent = 'נשמר. העלאה ל-Drive ופתיחה ב-Docs';
+    label.textContent = `נשמר (${comments.length} הערות). העלאה ל-Drive ופתיחה ב-Docs`;
   } catch { label.textContent = 'השמירה נכשלה: להפעיל מחדש את העורך?'; }
   setTimeout(() => { label.textContent = idle; }, 4000);
 };
@@ -2373,15 +2722,19 @@ function applyCodingMode(on) {
   for (const e of S.els.values()) e.p.setAttribute('contenteditable', on ? 'false' : (PLAIN ? 'plaintext-only' : 'true'));
   if (!on) hideBar();
 }
-function setPane(p) {
-  S.pane = p;
-  const codes = p === 'codes';
-  $('tabSpots').setAttribute('aria-selected', String(!codes)); $('tabCodes').setAttribute('aria-selected', String(codes));
-  $('spots').hidden = codes || !S.spots.length; $('spotsEmpty').hidden = codes || !!S.spots.length || !S.doc;
+function showPane() {
+  const p = S.pane, spots = p === 'spots', notes = p === 'notes', codes = p === 'codes';
+  $('tabSpots').setAttribute('aria-selected', String(spots)); $('tabNotes').setAttribute('aria-selected', String(notes));
+  $('tabCodes').setAttribute('aria-selected', String(codes));
+  $('spots').hidden = !spots || !S.spots.length; $('spotsEmpty').hidden = !spots || !!S.spots.length || !S.doc;
+  $('notesTop').hidden = !notes; $('noteForm').hidden = !S.noteEdit;
+  $('notes').hidden = !notes || !S.notes.length; $('notesEmpty').hidden = !notes || !!S.notes.length || !S.doc || !!S.noteEdit;
   $('codesPane').hidden = !codes;
   applyCodingMode(codes);
 }
+function setPane(p) { S.pane = p; hideNoteBar(); showPane(); }
 $('tabSpots').onclick = () => setPane('spots');
+$('tabNotes').onclick = () => setPane('notes');
 $('tabCodes').onclick = () => setPane('codes');
 addEventListener('beforeunload', () => { if (S.codeDirty) flushCodes(); });
 document.addEventListener('visibilitychange', () => { if (document.hidden && S.codeDirty) flushCodes(); });

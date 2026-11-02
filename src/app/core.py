@@ -500,6 +500,40 @@ def save_doc(name, turns, base_sha, force=False):
         return new_sha
 
 
+# ---------------------------------------------------------------- margin notes
+# Notes the user writes beside the transcript. A note is about a passage: `quote` holds its words and `turn`
+# a hint of where it was, and the note is found again by its words, so edits around it are safe. Not a cache: keep.
+
+NOTE_KINDS = ("check", "speaker", "quote", "insight", "general")
+
+
+def notes_path(name):
+    return DATA / f"{name}.notes.json"
+
+
+def read_notes(name):
+    """[{id, kind, quote, turn, text, done}]"""
+    d = read_json(notes_path(name))
+    return d.get("notes", []) if isinstance(d, dict) else []
+
+
+def save_notes(name, notes):
+    clean, seen = [], set()
+    for n in notes[:2000] if isinstance(notes, list) else []:
+        nid, text = _clean_text(n.get("id"), 40), str(n.get("text") or "").strip()[:4000]
+        if not (nid and text) or nid in seen:
+            continue
+        seen.add(nid)
+        kind, turn = n.get("kind"), n.get("turn")
+        clean.append({"id": nid, "kind": kind if kind in NOTE_KINDS else "general",
+                      "quote": _clean_text(n.get("quote"), 6000),
+                      "turn": turn if isinstance(turn, int) and turn >= 0 else 0,
+                      "text": text, "done": bool(n.get("done"))})
+    with _file_locks["notes:" + name]:
+        write_atomic(notes_path(name), json.dumps({"notes": clean}, ensure_ascii=False, indent=1).encode("utf-8"))
+    return len(clean)
+
+
 # ---------------------------------------------------------------- coding
 # The user marks passages by topic, one colour per category (the legend). A mark is stored as the marked words plus
 # a hint of where they were, and is found again by its words, so edits around it are safe. Not a cache: keep.
@@ -609,6 +643,11 @@ def build_docx(payload):
     def para(inner):
         return f'<w:p><w:pPr><w:bidi/><w:spacing w:after="160" w:line="360" w:lineRule="auto"/></w:pPr>{inner}</w:p>'
 
+    comments = {}
+    for c in (payload.get("comments") or [])[:2000]:
+        comments[str(c.get("id"))] = (str(c.get("label") or "")[:60], str(c.get("text") or "")[:4000])
+    order = {cid: n for n, cid in enumerate(comments)}
+
     body = [para(run(_clean_text(payload.get("title"), 80) or "תמלול מקודד", bold=True, size=28))]
     legend = [l for l in (payload.get("legend") or [])[:60] if color(l.get("color"))]
     if legend:
@@ -617,29 +656,48 @@ def build_docx(payload):
         inner = run(str(turn.get("sp") or "")[:40] + ": ", bold=True) if turn.get("sp") else ""
         words = (turn.get("w") or [])[:20000]
         for i, w in enumerate(words):
+            for cid in w.get("cs") or []:
+                if str(cid) in order:
+                    inner += f'<w:commentRangeStart w:id="{order[str(cid)]}"/>'
             fill = color(w.get("c"))
             inner += run(str(w.get("t") or ""), fill)
+            for cid in w.get("ce") or []:
+                if str(cid) in order:
+                    n = order[str(cid)]
+                    inner += (f'<w:commentRangeEnd w:id="{n}"/><w:r><w:rPr><w:rStyle w:val="CommentReference"/></w:rPr>'
+                              f'<w:commentReference w:id="{n}"/></w:r>')
             if i + 1 < len(words):
                 nxt = color(words[i + 1].get("c"))
                 inner += run(" ", fill if fill and fill == nxt else None)
         body.append(para(inner))
 
-    ns = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"'
+    ns = ('xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" '
+          'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"')
     document = (f'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document {ns}><w:body>' + "".join(body)
                 + '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" '
                   'w:header="708" w:footer="708" w:gutter="0"/><w:bidi/></w:sectPr></w:body></w:document>')
+    stamp = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    cm = []
+    for cid, (label, text) in comments.items():
+        paras = "".join(f'<w:p><w:pPr><w:bidi/></w:pPr>{run(((label + ": ") if k == 0 and label else "") + line)}</w:p>'
+                        for k, line in enumerate(text.split("\n") or [""]))
+        cm.append(f'<w:comment w:id="{order[cid]}" w:author="עורך תמלול" w:date="{stamp}" w:initials="ע">{paras}</w:comment>')
+    comments_xml = f'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:comments {ns}>' + "".join(cm) + "</w:comments>"
     styles = (f'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles {ns}><w:docDefaults><w:rPrDefault><w:rPr>'
               '<w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/><w:sz w:val="22"/><w:szCs w:val="22"/><w:lang w:bidi="he-IL"/>'
-              '</w:rPr></w:rPrDefault></w:docDefaults></w:styles>')
+              '</w:rPr></w:rPrDefault></w:docDefaults>'
+              '<w:style w:type="character" w:styleId="CommentReference"><w:name w:val="annotation reference"/><w:rPr><w:sz w:val="16"/></w:rPr></w:style></w:styles>')
     types = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
              '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
              '<Default Extension="xml" ContentType="application/xml"/>'
              '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>'
-             '<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>')
+             '<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>'
+             '<Override PartName="/word/comments.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml"/></Types>')
     rels = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
             '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>')
     drels = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
-             '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>')
+             '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'
+             '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments" Target="comments.xml"/></Relationships>')
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
         z.writestr("[Content_Types].xml", types)
@@ -647,4 +705,5 @@ def build_docx(payload):
         z.writestr("word/document.xml", document)
         z.writestr("word/_rels/document.xml.rels", drels)
         z.writestr("word/styles.xml", styles)
+        z.writestr("word/comments.xml", comments_xml)
     return buf.getvalue()
