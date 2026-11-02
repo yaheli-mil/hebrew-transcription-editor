@@ -30,6 +30,7 @@ DEST = OUT / "package"                          # the folder the installer carri
 PY = Path(sys.base_prefix)                      # the Python 3.12 this script runs with
 SITE = PY / "Lib" / "site-packages"
 SYS32 = Path(os.environ["WINDIR"]) / "System32"
+APACHE = next(SITE.glob("huggingface_hub-*.dist-info")) / "LICENSE"      # the Apache 2.0 text
 
 # What a real transcription + the server load (traced), plus the .libs folders their DLLs live in.
 PACKAGES = ["av", "av.libs", "certifi", "charset_normalizer", "colorama", "ctranslate2", "faster_whisper",
@@ -43,6 +44,8 @@ DLLS_SKIP = {"_tkinter.pyd", "tcl86t.dll", "tk86t.dll"}
 # The C++ runtime ctranslate2 and onnxruntime need; not every PC has the Visual C++ package that installs it.
 RUNTIME = ["msvcp140.dll", "msvcp140_1.dll"]
 MODEL_FILES = ["config.json", "model.bin", "preprocessor_config.json", "tokenizer.json", "vocabulary.json"]
+# Only fonts whose licence allows passing them on (SIL OFL), with that licence.
+FONTS = ["Rubik-*.ttf", "NotoSansHebrew-*.ttf", "OFL.txt"]
 APP_FILES = ["server.py", "core.py", "transcribe.py", "diarize.py", "index.html"]
 
 def copy_tree(src, dst, skip=()):
@@ -109,11 +112,19 @@ def build():
     app.mkdir()
     for f in APP_FILES:
         shutil.copy2(SRC / "app" / f, app / f)
-    copy_tree(SRC / "app" / "fonts", app / "fonts")
+    (app / "fonts").mkdir()
+    for pattern in FONTS:
+        for f in (SRC / "app" / "fonts").glob(pattern):
+            shutil.copy2(f, app / "fonts" / f.name)
     print("model ...", flush=True)
     (DEST / "model").mkdir()
     for f in MODEL_FILES:
         shutil.copyfile(SRC / "model" / f, DEST / "model" / f)
+    # The model is Apache-2.0 (ivrit-ai): its licence goes with it.
+    (DEST / "model" / "LICENSE").write_text(APACHE.read_text(encoding="utf-8"), encoding="utf-8")
+    (DEST / "model" / "README.txt").write_text(
+        "ivrit-ai/whisper-large-v3-turbo-ct2 (https://huggingface.co/ivrit-ai/whisper-large-v3-turbo-ct2)\n"
+        "Based on openai/whisper-large-v3-turbo. Licensed under the Apache License 2.0 (see LICENSE).\n", encoding="utf-8")
     print("programs ...", flush=True)
     exes = programs.compile_all(SRC / "installer" / "build")
     shutil.copy2(exes["launcher"], DEST / "עורך תמלול.exe")

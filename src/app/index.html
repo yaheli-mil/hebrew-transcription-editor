@@ -12,20 +12,17 @@
 @font-face { font-family: "Rubik Editor"; src: url("/fonts/Rubik-Medium.ttf") format("truetype"); font-weight: 500; font-display: swap; }
 @font-face { font-family: "Rubik Editor"; src: url("/fonts/Rubik-SemiBold.ttf") format("truetype"); font-weight: 600; font-display: swap; }
 @font-face { font-family: "Rubik Editor"; src: url("/fonts/Rubik-Bold.ttf") format("truetype"); font-weight: 700; font-display: swap; }
-@font-face { font-family: "Yarden Editor"; src: url("/fonts/Yarden-Regular.otf") format("opentype"); font-weight: 400; font-display: swap; }
-@font-face { font-family: "Yarden Editor"; src: url("/fonts/Yarden-Bold.otf") format("opentype"); font-weight: 700; font-display: swap; }
 @font-face { font-family: "Noto Hebrew Editor"; src: url("/fonts/NotoSansHebrew-Regular.ttf") format("truetype"); font-weight: 400; font-display: swap; }
 @font-face { font-family: "Noto Hebrew Editor"; src: url("/fonts/NotoSansHebrew-SemiBold.ttf") format("truetype"); font-weight: 600; font-display: swap; }
 @font-face { font-family: "Noto Hebrew Editor"; src: url("/fonts/NotoSansHebrew-Bold.ttf") format("truetype"); font-weight: 700; font-display: swap; }
-@font-face { font-family: "Cascadia Editor"; src: url("/fonts/CascadiaMono.ttf") format("truetype"); font-weight: 200 700; font-display: swap; }
 
 /* Studio layout: a player column (audio, then the queue of places to check) beside the transcript,
-   set like a printed page on a grey desk. UI in Rubik, the transcript in Yarden, times in Cascadia Mono. */
+   set like a printed page on a grey desk. UI in Rubik, the transcript in Noto Sans Hebrew (or Rubik), times in a monospace font. */
 :root {
   color-scheme: light;
   --f-ui: "Rubik Editor", "Rubik", "Heebo", "Segoe UI", system-ui, sans-serif;
-  --f-read: "Yarden Editor", "Yarden AlefAlefAlef", "Noto Hebrew Editor", sans-serif;
-  --f-mono: "Cascadia Editor", "Cascadia Mono", "Consolas", ui-monospace, monospace;
+  --f-read: "Noto Hebrew Editor", "Noto Sans Hebrew", sans-serif;
+  --f-mono: "Cascadia Mono", "Consolas", ui-monospace, monospace;
   --read-size: 19px;
 
   --bg: #f2f3f6; --panel: #ffffff; --paper: #ffffff; --raised: #f5f6f9; --hover: #eef0f5;
@@ -284,6 +281,87 @@ button { font: inherit; color: inherit; }
 .txt:focus { background: color-mix(in srgb, var(--accent-soft) 55%, transparent); box-shadow: 0 0 0 8px color-mix(in srgb, var(--accent-soft) 55%, transparent); }
 .w { border-radius: 4px; transition: background-color .12s; }
 .seek .w { cursor: pointer; }
+/* --------------------------------------------------------------- coding (colour highlights marked by hand) */
+.w.coded {
+  background: light-dark(color-mix(in srgb, var(--cc) 46%, transparent), color-mix(in srgb, var(--cc) 44%, transparent));
+  padding: 1px .14em; margin-inline: -.14em; border-radius: 3px; box-decoration-break: clone; -webkit-box-decoration-break: clone;
+}
+.w.coded.cdim { background: none; }
+.coding .txt { caret-color: transparent; }
+.coding .w, .coding.seek .w { cursor: text; }
+.panes button { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; }
+.panes button[aria-selected="true"] { background: var(--panel); color: var(--ink); font-weight: 600; box-shadow: var(--shadow-1); }
+.panes .count { line-height: 18px; padding: 0 6px; font-size: 11px; }
+.panes .count.codes { background: var(--ok-soft); color: var(--ok); }
+.review:has(.codes-pane:not([hidden])) { min-height: 600px; flex: none; }
+.codes-pane { flex: 1; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; padding: 12px 8px 14px; }
+.codes-hint { margin: 0 8px 4px; font-size: 12.5px; line-height: 1.6; color: var(--ink-3); }
+.codes-hint kbd, .codebar kbd { font: 600 10.5px var(--f-mono); padding: 0 5px; border: 1px solid var(--line-2); border-bottom-width: 2px; border-radius: 5px; background: var(--raised); color: var(--ink-2); }
+.codes-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 8px 2px; font-size: 12px; color: var(--ink-3); letter-spacing: .03em; }
+.codes-tools b { font-weight: 600; margin-inline-end: auto; }
+.cats, .cxs { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.cat-row {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto auto; align-items: center; gap: 9px;
+  padding: 6px 8px 6px 6px; border-radius: 10px; cursor: pointer; transition: background .12s;
+}
+.cat-row:hover { background: var(--hover); }
+.cat-row.on { background: var(--accent-soft); }
+.swatch { width: 16px; height: 16px; border-radius: 5px; background: var(--cc); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .12); }
+.cat-name { font-size: 14px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cat-n { font: 600 11.5px var(--f-mono); color: var(--ink-3); min-width: 18px; text-align: center; }
+.cat-row kbd { font: 600 10.5px var(--f-mono); color: var(--ink-3); direction: ltr; }
+.cat-row .icon-btn { width: 26px; height: 26px; opacity: 0; }
+.cat-row:hover .icon-btn, .cat-row .icon-btn:focus-visible { opacity: 1; }
+.cat-add, .cx-copy {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 6px 10px; border-radius: 9px;
+  border: 1px dashed var(--line-2); background: none; color: var(--ink-2); font-size: 13px; cursor: pointer;
+}
+.cat-add:hover, .cx-copy:hover { background: var(--hover); color: var(--ink); }
+.cx-copy { border-style: solid; padding: 3px 9px; font-size: 12px; letter-spacing: 0; }
+.cx-copy.done { color: var(--ok); border-color: var(--ok); }
+.catform { display: grid; gap: 10px; margin: 2px 4px; padding: 12px; border: 1px solid var(--line-2); border-radius: 12px; background: var(--raised); }
+.catform input[type="text"] {
+  width: 100%; padding: 7px 10px; border: 1px solid var(--line-2); border-radius: 9px; background: var(--panel); color: var(--ink); font: inherit;
+}
+.swatches { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.swatches button {
+  width: 24px; height: 24px; border-radius: 8px; border: 2px solid transparent; background: var(--cc); cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .15);
+}
+.swatches button[aria-pressed="true"] { border-color: var(--ink); }
+.swatches input[type="color"] { width: 30px; height: 26px; padding: 0; border: 1px solid var(--line-2); border-radius: 8px; background: none; cursor: pointer; }
+.catform .frow { display: flex; gap: 8px; }
+.catform .frow button { border: 1px solid var(--line-2); border-radius: 9px; background: var(--panel); padding: 5px 12px; font-size: 13px; cursor: pointer; }
+.catform .frow .fsave { background: var(--accent-hi); border-color: var(--accent-lo); color: var(--on-accent); font-weight: 600; }
+.catform .frow .fdel { margin-inline-start: auto; color: var(--bad); }
+.cx {
+  display: grid; grid-template-columns: 4px minmax(0, 1fr) auto auto; align-items: center; gap: 9px; width: 100%;
+  padding: 6px 8px 6px 4px; border: 0; border-radius: 9px; background: none; text-align: start; cursor: pointer;
+}
+.cx:hover, .cxs li.sel .cx { background: var(--hover); }
+.cx .cbar { align-self: stretch; border-radius: 3px; background: var(--cc); }
+.cx .snip { font-size: 13px; line-height: 1.45; color: var(--ink-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.cx .snip b { display: block; font-size: 11.5px; font-weight: 600; color: var(--ink-3); }
+.cx .at { font-size: 11.5px; color: var(--ink-3); }
+.cx .x { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; color: var(--ink-3); opacity: 0; }
+.cx:hover .x, .cx:focus-visible .x { opacity: 1; }
+.cx .x:hover { background: var(--bad-soft); color: var(--bad); }
+.cx.lost .snip { color: var(--ink-3); font-style: italic; }
+.cx-empty, .codes-err { margin: 6px 10px; font-size: 13px; color: var(--ink-3); }
+.codes-err { padding: 10px 12px; border-radius: 10px; background: var(--warn-soft); color: var(--ink); }
+.codebar {
+  position: fixed; z-index: 30; display: flex; flex-wrap: wrap; gap: 4px; max-width: min(640px, 94vw); padding: 6px;
+  background: var(--panel); border: 1px solid var(--line-2); border-radius: 14px; box-shadow: var(--shadow-2);
+}
+.codebar button {
+  display: inline-flex; align-items: center; gap: 7px; border: 0; border-radius: 9px; padding: 6px 10px;
+  background: var(--raised); color: var(--ink); font-size: 13px; cursor: pointer;
+}
+.codebar button:hover { background: color-mix(in srgb, var(--cc, var(--bad)) 28%, var(--raised)); }
+.codebar .sw { width: 12px; height: 12px; border-radius: 4px; background: var(--cc); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .15); }
+.codebar .rm { background: none; color: var(--bad); }
+.codebar .rm:hover { background: var(--bad-soft); }
+
 .w.now { background: var(--mark); color: var(--on-mark); box-shadow: 0 0 0 3px var(--mark); }
 .w.unsure { text-decoration: underline dotted var(--warn); text-decoration-thickness: 2px; text-underline-offset: 7px; }
 .w.q {
@@ -494,6 +572,10 @@ body.home .tabs { display: none; }
 <symbol id="i-audio-lines" viewBox="0 0 24 24"><path d="M2 10v3" /> <path d="M6 6v11" /> <path d="M10 3v18" /> <path d="M14 8v7" /> <path d="M18 5v13" /> <path d="M22 10v3" /></symbol>
 <symbol id="i-book-open" viewBox="0 0 24 24"><path d="M12 5v16" /> <path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z" /></symbol>
 <symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /> <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></symbol>
+<symbol id="i-highlighter" viewBox="0 0 24 24"><path d="m9 11-6 6v3h9l3-3" /> <path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4" /></symbol>
+<symbol id="i-pencil" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /> <path d="m15 5 4 4" /></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18" /> <path d="m6 6 12 12" /></symbol>
+<symbol id="i-eraser" viewBox="0 0 24 24"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21" /> <path d="M22 21H7" /> <path d="m5 11 9 9" /></symbol>
 <symbol id="i-table-2" viewBox="0 0 24 24"><path d="M3 9h18" /> <path d="M9 3v18" /> <rect x="3" y="3" width="18" height="18" rx="2" /></symbol>
 <symbol id="i-arrow-up-left" viewBox="0 0 24 24"><path d="M7 17V7h10" /> <path d="M17 17 7 7" /></symbol>
 <symbol id="i-notebook-pen" viewBox="0 0 24 24"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4" /> <path d="M2 6h4" /> <path d="M2 10h4" /> <path d="M2 14h4" /> <path d="M2 18h4" /> <path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" /></symbol>
@@ -569,9 +651,12 @@ body.home .tabs { display: none; }
       <div class="hold" id="hold" aria-live="polite"></div>
     </section>
 
-    <section class="card review" aria-label="מקומות לבדיקה">
+    <section class="card review" aria-label="בדיקה וקידוד">
       <header class="review-head">
-        <h3 class="rh-title"><svg class="ic xs" aria-hidden="true"><use href="#i-list-checks"/></svg>לבדיקה<span class="count mono" id="spotCount">0</span></h3>
+        <div class="seg panes" role="tablist" aria-label="מה להציג">
+          <button type="button" role="tab" id="tabSpots" aria-selected="true"><svg class="ic xs" aria-hidden="true"><use href="#i-list-checks"/></svg>לבדיקה<span class="count mono" id="spotCount">0</span></button>
+          <button type="button" role="tab" id="tabCodes" aria-selected="false"><svg class="ic xs" aria-hidden="true"><use href="#i-highlighter"/></svg>קידוד<span class="count codes mono" id="codeCount" hidden>0</span></button>
+        </div>
         <div class="nav">
           <button class="icon-btn sm" id="spotPrev" type="button" aria-label="הקודם" title="הקודם (Alt+↑)">
             <svg class="ic sm" aria-hidden="true"><use href="#i-chevron-up"/></svg>
@@ -583,6 +668,22 @@ body.home .tabs { display: none; }
       </header>
       <ol class="spots" id="spots"></ol>
       <p class="spots-empty" id="spotsEmpty" hidden><b>הכול נבדק</b>אין בתמלול הזה מילים מסומנות.</p>
+      <div class="codes-pane" id="codesPane" hidden>
+        <p class="codes-hint" id="codesHint">בוחרים טקסט בעכבר ואז קטגוריה בסרגל (או <kbd>Alt</kbd> + מספר). לחיצה על קטע מסומן: שינוי או הסרה.</p>
+        <div class="codes-tools">
+          <b>מקרא</b>
+          <button class="icon-btn sm" id="codeUndo" type="button" aria-label="ביטול הסימון האחרון" title="ביטול הסימון האחרון (Ctrl+Z)"><svg class="ic sm" aria-hidden="true"><use href="#i-undo-2"/></svg></button>
+        </div>
+        <ul class="cats" id="cats"></ul>
+        <form class="catform" id="catForm" hidden></form>
+        <button class="cat-add" id="catAdd" type="button"><svg class="ic xs" aria-hidden="true"><use href="#i-plus"/></svg>קטגוריה חדשה</button>
+        <div class="codes-tools"><b>הקטעים המסומנים</b>
+          <button class="cx-copy" id="codeCopy" type="button" title="מעתיק את התמלול עם הסימונים בצבעים, להדבקה ב-Word או ב-Docs"><svg class="ic xs" aria-hidden="true"><use href="#i-copy"/></svg><span>העתקה עם צבעים</span></button>
+          <button class="cx-copy" id="codeSaveDoc" type="button" title="שומר קובץ Word עם הסימונים בצבעים. ב-Google Drive: העלאה ופתיחה באמצעות Google Docs"><svg class="ic xs" aria-hidden="true"><use href="#i-copy"/></svg><span>ל-Google Docs</span></button>
+        </div>
+        <ol class="cxs" id="cxs"></ol>
+        <p class="cx-empty" id="cxEmpty" hidden>עוד לא סומן כלום בריאיון הזה.</p>
+      </div>
     </section>
     <a class="credit deck-credit" href="https://www.instagram.com/yali.millerman/" target="_blank" rel="noopener noreferrer" title="יהלי מילרמן באינסטגרם"><svg class="ic" aria-hidden="true"><use href="#i-ig"/></svg><span>נבנה על ידי <b>יהלי מילרמן</b></span></a>
   </aside>
@@ -636,7 +737,7 @@ body.home .tabs { display: none; }
   </div>
   <div class="row"><span>גופן התמלול</span>
     <div class="seg" id="fontSeg" role="radiogroup" aria-label="גופן התמלול">
-      <button type="button" role="radio" data-v="yarden" style="font-family: 'Yarden Editor'">ירדן</button><button type="button" role="radio" data-v="rubik" style="font-family: 'Rubik Editor'">רוביק</button><button type="button" role="radio" data-v="noto" style="font-family: 'Noto Hebrew Editor'">נוטו</button>
+      <button type="button" role="radio" data-v="rubik" style="font-family: 'Rubik Editor'">רוביק</button><button type="button" role="radio" data-v="noto" style="font-family: 'Noto Hebrew Editor'">נוטו</button>
     </div>
   </div>
   <div class="row"><span>גודל הטקסט</span>
@@ -661,6 +762,7 @@ body.home .tabs { display: none; }
     <dt dir="ltr"><kbd>Enter</kbd></dt><dd>פיצול הקטע במקום הסמן, לדובר השני</dd>
     <dt dir="ltr"><kbd>Backspace</kbd></dt><dd>בתחילת קטע: איחוד עם הקטע שלפניו</dd>
     <dt dir="ltr"><kbd>Ctrl</kbd> <kbd>Z</kbd></dt><dd>ביטול (<kbd>Ctrl</kbd> <kbd>Y</kbd> להחזרה)</dd>
+    <dt dir="ltr"><kbd>Alt</kbd> <kbd>1</kbd>…<kbd>9</kbd></dt><dd>בלשונית קידוד: מסמן את הבחירה בקטגוריה לפי מספרה</dd>
     <dt>לחיצה על <b>?</b></dt><dd>המילה נכונה: מסיר את הסימון</dd>
     <dt>לחיצה על הדובר</dt><dd>מחליף דובר</dd>
   </dl>
@@ -718,6 +820,8 @@ body.home .tabs { display: none; }
 
 <div class="dropzone" id="dropzone" hidden><div><svg class="ic" aria-hidden="true"><use href="#i-upload"/></svg>שחררו כדי להוסיף את ההקלטה</div></div>
 
+<div class="codebar" id="codebar" role="toolbar" aria-label="קטגוריות לסימון" hidden></div>
+
 <audio id="audio" preload="metadata"></audio>
 
 <script>
@@ -730,7 +834,6 @@ const SVGNS = 'http://www.w3.org/2000/svg';
 const RE_SPOKEN = /[0-9A-Za-zא-ת]/, RE_Q = /^\(\?\)\S*$/, RE_INT = /מראיי[ןנ]/;      // "המראיין", "דנה (המראיינת)"... but not "מרואיין"
 const RATES = [0.5, 0.75, 1, 1.25, 1.5, 2];
 const FONTS = {
-  yarden: '"Yarden Editor", "Yarden AlefAlefAlef", "Noto Hebrew Editor", sans-serif',
   rubik: '"Rubik Editor", "Rubik", sans-serif',
   noto: '"Noto Hebrew Editor", "Noto Sans Hebrew", sans-serif',
 };
@@ -780,7 +883,7 @@ const api = {
 };
 
 const opts = { seek: store.get('seek', true), hold: store.get('hold', true), rate: store.get('rate', 1) };
-const prefs = { theme: store.get('theme', 'auto'), font: store.get('font', 'yarden'), size: store.get('size', 19) };
+const prefs = { theme: store.get('theme', 'auto'), font: store.get('font', 'noto'), size: store.get('size', 19) };
 const S = {
   list: [], name: null, doc: null, speakers: [], els: new Map(), tabs: new Map(),
   flat: [], spots: [], segs: [], peaks: null, undo: [], redo: [],
@@ -927,7 +1030,7 @@ function buildTurn(turn) {
   spk.type = time.type = 'button';
   spk.title = 'החלפת דובר'; time.title = 'קפיצה לתחילת הקטע';
   p.dir = 'rtl'; p.spellcheck = false; p.setAttribute('role', 'textbox');
-  p.setAttribute('contenteditable', PLAIN ? 'plaintext-only' : 'true');
+  p.setAttribute('contenteditable', S.pane === 'codes' ? 'false' : PLAIN ? 'plaintext-only' : 'true');
   who.append(spk, time); root.append(who, p);
   const e = { root, p, spk, time, spans: [], turn: null, start: null };
   updateTurn(e, turn);
@@ -968,6 +1071,7 @@ function reindex() {
   S.flat = flat; S.spots = spots; S.segs = segs; S.waveDirty = true;
   docEl.classList.toggle('seek', opts.seek && flat.length > 0);
   renderSpots();
+  renderCodes();
   paint();
 }
 function locate(t) {
@@ -1203,7 +1307,7 @@ docEl.addEventListener('click', ev => {
   const span = ev.target.closest('.w');
   if (!span || !e || e.spans[span._i] !== span) return;
   const turn = e.turn, i = span._i, m = turn.meta[i], w = turn.w[i];
-  if (m.k === 'q') return dismissMark(id, i);
+  if (m.k === 'q') return S.pane === 'codes' ? undefined : dismissMark(id, i);
   if (!getSelection().isCollapsed) return;
   if (m.k === 'gap') {
     selectBracket(e, m);
@@ -1403,7 +1507,8 @@ function renderSpots() {
     return el('li').appendChild(btn).parentNode;
   });
   list.replaceChildren(...items);
-  list.hidden = !n; $('spotsEmpty').hidden = !!n || !S.doc;
+  const codes = S.pane === 'codes';
+  list.hidden = !n || codes; $('spotsEmpty').hidden = !!n || !S.doc || codes;
   $('spotCount').textContent = n; $('spotCount').classList.toggle('done', !n);
   $('spotPrev').disabled = $('spotNext').disabled = !n;
   const tab = S.tabs.get(S.name);
@@ -1445,7 +1550,7 @@ $('spots').addEventListener('click', ev => {
 });
 $('spotNext').onclick = () => step(1);
 $('spotPrev').onclick = () => step(-1);
-function step(dir) { gotoSpot(dir); }
+function step(dir) { if (S.pane === 'codes') stepCode(dir); else gotoSpot(dir); }
 
 /* ----------------------------------------------------- recordings, tabs */
 const STAGES = { prepare: 'מכין את הקובץ', load: 'טוען את מודל התמלול', transcribe: 'מתמלל', speakers: 'מזהה מי מדבר' };
@@ -1600,13 +1705,16 @@ async function loadPeaks(name, tries = 0) {
 async function openRec(name) {
   if (name === S.name) return;
   if (S.dirty) await save();
+  if (S.codeDirty) await flushCodes();
   releaseHold(); audio.pause();
   S.name = name; store.set('last', name);
   S.doc = null; S.peaks = null; S.els.clear(); S.flat = []; S.spots = []; S.segs = []; S.jobKey = null;
   S.activeEl = S.activeTurn = null; S.dirty = false; S.conflict = false; S.shownSec = -1; S.posReady = false;
+  S.codes = []; S.codeAt = new Map(); S.codeCur = null; S.codeUndo = []; S.codeFilter = null; S.codeDirty = false; hideBar();
   docEl.replaceChildren(); $('notice').hidden = true; setSave(''); sheet.scrollTop = 0;
   setAudio(name);
   renderTabs(); showMeta(); drawWave(true);
+  loadCodes(name);
   await loadDoc();
 }
 /* Recordings in formats a browser cannot play are converted first: wait for that before loading the sound. */
@@ -1781,7 +1889,7 @@ $('delRec').onclick = () => { if (S.name) deleteRec(S.name); };
 function applyPrefs() {
   const root = document.documentElement;
   if (prefs.theme === 'auto') root.removeAttribute('data-theme'); else root.dataset.theme = prefs.theme;
-  root.style.setProperty('--f-read', FONTS[prefs.font] || FONTS.yarden);
+  root.style.setProperty('--f-read', FONTS[prefs.font] || FONTS.noto);
   root.style.setProperty('--read-size', prefs.size + 'px');
   for (const [id, v] of [['themeSeg', prefs.theme], ['fontSeg', prefs.font]])
     for (const b of $(id).children) b.setAttribute('aria-checked', String(b.dataset.v === v));
@@ -1806,6 +1914,478 @@ $('optSeek').checked = opts.seek; $('optHold').checked = opts.hold;
 $('optSeek').onchange = ev => { opts.seek = ev.target.checked; store.set('seek', opts.seek); docEl.classList.toggle('seek', opts.seek && S.flat.length > 0); };
 $('optHold').onchange = ev => { opts.hold = ev.target.checked; store.set('hold', opts.hold); if (!opts.hold) releaseHold(); };
 
+/* ------------------------------------------------------------- coding */
+/* The user reads the transcript and marks passages by topic, one colour per category (the legend).
+   Nothing here classifies anything for them. A mark is stored as the marked words plus a hint of where they
+   were (turn, word), and is found again by its words, so edits around it are safe. */
+const CODE_COLORS = ['#f2c230', '#f0813a', '#e5566d', '#e66fb0', '#a56ee6', '#4f9cf2', '#2fb8c9', '#43bd78', '#a3c93a', '#8d94a7'];
+Object.assign(S, { pane: 'spots', cats: [], codes: [], codeAt: new Map(), codeFilter: null, codeCur: null, codeUndo: [], codeDirty: false, codeEdit: null, codesErr: false, codingOn: false });
+let codeTimer = 0, codeSaving = null;
+const catOf = id => S.cats.find(c => c.id === id);
+const newCodeId = () => 'k' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const escHtml = x => x.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const normTok = t => t.replace(/[^0-9A-Za-zא-ת]/g, '');
+
+Object.assign(api, {
+  categories: async () => (await getJSON('/api/categories')).categories,
+  codes: async name => (await getJSON('/api/codes?name=' + encodeURIComponent(name))).codes,
+});
+
+/* Where a mark's words are now: all places in the turn that match, the one nearest the old position wins;
+   when the words were edited a little, its first and last three words still find it. */
+function findAllQuote(turn, quote) {
+  const q = quote.split(/\s+/).map(normTok).filter(Boolean), tn = turn.w.map(w => normTok(w.t)), out = [];
+  if (!q.length) return out;
+  for (let i = 0; i < tn.length; i++) {
+    if (tn[i] !== q[0]) continue;
+    let k = 0, j = i, last = i;
+    while (j < tn.length && k < q.length) { if (!tn[j]) { j++; continue; } if (tn[j] !== q[k]) break; last = j; k++; j++; }
+    if (k === q.length) out.push([i, last]);
+  }
+  return out;
+}
+function resolveCode(code) {
+  const turns = S.doc.turns, n = turns.length;
+  if (!n) return null;
+  const hint = Math.min(Math.max(0, code.turn || 0), n - 1);
+  for (let d = 0; d < n; d++) {
+    for (const ti of d ? [hint - d, hint + d] : [hint]) {
+      if (ti < 0 || ti >= n) continue;
+      const hits = findAllQuote(turns[ti], code.quote);
+      if (hits.length) { hits.sort((a, b) => Math.abs(a[0] - code.at) - Math.abs(b[0] - code.at)); return { ti, from: hits[0][0], to: hits[0][1] }; }
+    }
+  }
+  const words = code.quote.split(/\s+/).filter(x => normTok(x));
+  if (words.length >= 4) {
+    const head = words.slice(0, 3).join(' '), tail = words.slice(-3).join(' ');
+    for (const ti of [hint, hint - 1, hint + 1, hint - 2, hint + 2]) {
+      if (ti < 0 || ti >= n) continue;
+      const a = findAllQuote(turns[ti], head)[0], z = findAllQuote(turns[ti], tail).filter(x => a && x[1] >= a[0]).pop();
+      if (a && z && z[1] - a[0] < words.length * 2 + 6) return { ti, from: a[0], to: z[1], fuzzy: true };
+    }
+  }
+  return null;
+}
+const wordsText = (turn, a, b) => turn.w.slice(a, b + 1).map(x => x.t).join(' ');
+
+function renderCodes() {
+  for (const s of docEl.querySelectorAll('.w.coded')) {
+    s.classList.remove('coded', 'cdim'); s.style.removeProperty('--cc'); delete s.dataset.cid;
+    if (s.dataset.ct) { s.removeAttribute('title'); delete s.dataset.ct; }
+  }
+  const at = new Map();
+  let changed = false;
+  for (const code of S.doc ? S.codes : []) {
+    const r = resolveCode(code), cat = catOf(code.cat);
+    at.set(code.id, r);
+    if (!r) continue;
+    const turn = S.doc.turns[r.ti];
+    if (code.turn !== r.ti || code.at !== r.from || r.fuzzy) {
+      code.turn = r.ti; code.at = r.from; changed = true;
+      if (r.fuzzy) code.quote = wordsText(turn, r.from, r.to);
+    }
+    const e = S.els.get(turn.id);
+    if (!e || !cat) continue;
+    const dim = S.codeFilter && S.codeFilter !== code.cat;
+    for (let k = r.from; k <= r.to; k++) {
+      const s = e.spans[k];
+      if (!s) continue;
+      s.classList.add('coded'); s.classList.toggle('cdim', !!dim);
+      s.style.setProperty('--cc', cat.color); s.dataset.cid = code.id;
+      if (!s.title) { s.title = cat.name; s.dataset.ct = '1'; }
+    }
+  }
+  S.codeAt = at;
+  if (changed) scheduleCodeSave();
+  renderCodePane();
+}
+
+/* ------------------------------------------------ the pane: legend and list of marks */
+function codeItems() {                                                 // marks in reading order, with where they are
+  if (!S.doc) return [];
+  return S.codes.map(code => ({ code, r: S.codeAt.get(code.id) || null, cat: catOf(code.cat) }))
+    .filter(x => x.cat)
+    .sort((a, b) => (a.r ? a.r.ti * 1e4 + a.r.from : 1e9) - (b.r ? b.r.ti * 1e4 + b.r.from : 1e9));
+}
+function renderCodePane() {
+  const items = codeItems(), counts = new Map();
+  for (const { code, r } of items) if (r) counts.set(code.cat, (counts.get(code.cat) || 0) + 1);
+  const total = items.filter(x => x.r).length;
+  $('codeCount').textContent = total; $('codeCount').hidden = !total;
+  $('codeUndo').disabled = !S.codeUndo.length;
+  $('codesHint').hidden = S.codesErr;
+  $('cats').replaceChildren(...S.cats.map((c, k) => {
+    const li = el('li', 'cat-row' + (S.codeFilter === c.id ? ' on' : '')), sw = el('span', 'swatch'), edit = el('button', 'icon-btn sm');
+    li.dataset.cat = c.id; li.style.setProperty('--cc', c.color);
+    li.title = S.codeFilter === c.id ? 'מציג רק את הקטגוריה הזו. לחיצה מחזירה את כולן' : 'לחיצה: להציג רק את הקטגוריה הזו';
+    edit.type = 'button'; edit.dataset.act = 'edit'; edit.title = 'עריכת הקטגוריה'; edit.setAttribute('aria-label', 'עריכת הקטגוריה ' + c.name);
+    edit.append(icon('pencil', 'xs'));
+    li.append(sw, el('span', 'cat-name', c.name), el('span', 'cat-n', counts.get(c.id) || ''), k < 9 ? el('kbd', null, String(k + 1)) : el('span'), edit);
+    return li;
+  }));
+  const list = items.filter(x => !S.codeFilter || x.cat.id === S.codeFilter);
+  $('cxs').replaceChildren(...list.map(({ code, r, cat }) => {
+    const li = el('li', S.codeCur === code.id ? 'sel' : ''), b = el('button', 'cx' + (r ? '' : ' lost')), snip = el('span', 'snip'), x = el('span', 'x');
+    b.type = 'button'; b.dataset.cid = code.id; b.style.setProperty('--cc', cat.color);
+    snip.append(el('b', null, cat.name), r ? wordsText(S.doc.turns[r.ti], r.from, r.to) : code.quote + ' (הטקסט השתנה ולא נמצא)');
+    x.dataset.act = 'rm'; x.title = 'הסרת הסימון'; x.append(icon('x', 'xs'));
+    const w = r && S.doc.turns[r.ti].w.slice(r.from, r.to + 1).find(v => v.s != null);
+    b.append(el('span', 'cbar'), snip, el('span', 'at mono', w ? fmt(w.s) : ''), x);
+    li.append(b);
+    return li;
+  }));
+  $('cxEmpty').hidden = !!items.length || S.codesErr || !S.doc;
+  $('cxEmpty').textContent = 'עוד לא סומן כלום בריאיון הזה.';
+  if (S.codeFilter && !list.length && items.length) { $('cxEmpty').hidden = false; $('cxEmpty').textContent = 'אין סימונים בקטגוריה הזו.'; }
+  $('tabCodes').title = total ? `${total} קטעים מסומנים בריאיון` : '';
+}
+
+/* ----------------------------------------------------------- saving */
+function scheduleCodeSave() { S.codeDirty = true; clearTimeout(codeTimer); codeTimer = setTimeout(flushCodes, 400); }
+async function flushCodes() {
+  clearTimeout(codeTimer);
+  while (codeSaving) await codeSaving;
+  if (!S.codeDirty || !S.name || !S.doc) return;
+  const name = S.name, codes = S.codes.map(c => ({ id: c.id, cat: c.cat, quote: c.quote, turn: c.turn, at: c.at }));
+  S.codeDirty = false;
+  codeSaving = api.post('/api/codes', { name, codes }).catch(() => {
+    S.codeDirty = true;
+    showNotice('bad', 'לא הצלחתי לשמור את הסימונים. בדקו שהחלון השחור של העורך עדיין פתוח.', [['נסו שוב', () => { $('notice').hidden = true; flushCodes(); }]]);
+  });
+  await codeSaving;
+  codeSaving = null;
+}
+async function saveCats() {
+  try { await api.post('/api/categories', { categories: S.cats }); }
+  catch { showNotice('bad', 'לא הצלחתי לשמור את הקטגוריות.'); }
+}
+async function loadCats() {
+  try { S.cats = await api.categories(); S.codesErr = false; }
+  catch { S.codesErr = true; }
+}
+async function loadCodes(name) {
+  try {
+    const codes = await api.codes(name);
+    if (S.name !== name) return;
+    S.codes = codes; S.codesErr = false;
+  } catch { if (S.name === name) S.codesErr = true; }
+  if (S.name === name) { renderCodes(); showCodesError(); }
+}
+function showCodesError() {
+  let box = $('codesPane').querySelector('.codes-err');
+  if (!S.codesErr) { if (box) box.remove(); return; }
+  if (!box) { box = el('p', 'codes-err', 'הקידוד לא זמין כרגע. צריך להפעיל מחדש את העורך.'); $('codesPane').prepend(box); }
+}
+
+/* ----------------------------------------------------------- marking */
+function pushCodeUndo() { S.codeUndo.push(JSON.stringify(S.codes)); if (S.codeUndo.length > 60) S.codeUndo.shift(); }
+function codeUndo() {
+  const prev = S.codeUndo.pop();
+  if (prev == null) return;
+  S.codes = JSON.parse(prev); S.codeCur = null; renderCodes(); scheduleCodeSave(); hideBar();
+}
+const trimLex = (turn, a, b) => { while (a <= b && !normTok(turn.w[a].t)) a++; while (b >= a && !normTok(turn.w[b].t)) b--; return a <= b ? [a, b] : null; };
+/* Give the words in `targets` ([{ti, a, b}]) the category `catId`, or no category (null): marks that overlap are cut around them. */
+function applyCode(catId, targets) {
+  if (!S.doc || !targets.length) return;
+  pushCodeUndo();
+  const turns = S.doc.turns, lost = [], items = [];
+  for (const code of S.codes) {
+    const r = S.codeAt.get(code.id);
+    if (r) items.push({ id: code.id, cat: code.cat, ti: r.ti, from: r.from, to: r.to }); else lost.push(code);
+  }
+  let list = items;
+  for (const { ti, a, b } of targets) {
+    const next = [];
+    for (const it of list) {
+      if (it.ti !== ti || it.to < a || it.from > b) { next.push(it); continue; }
+      if (it.from < a) next.push({ ...it, to: a - 1 });
+      if (it.to > b) next.push({ id: newCodeId(), cat: it.cat, ti, from: b + 1, to: it.to });
+    }
+    const t = trimLex(turns[ti], a, b);
+    if (catId && t) next.push({ id: newCodeId(), cat: catId, ti, from: t[0], to: t[1] });
+    list = next;
+  }
+  const out = lost.slice();
+  for (const it of list) {
+    const t = trimLex(turns[it.ti], it.from, it.to);
+    if (t) out.push({ id: it.id, cat: it.cat, quote: wordsText(turns[it.ti], t[0], t[1]), turn: it.ti, at: t[0] });
+  }
+  S.codes = out; S.codeCur = null;
+  renderCodes(); scheduleCodeSave();
+}
+function selectedTargets() {                                           // the words selected, per turn
+  const sel = getSelection();
+  if (!S.doc || !sel.rangeCount || sel.isCollapsed) return null;
+  const range = sel.getRangeAt(0);
+  if (!docEl.contains(range.commonAncestorContainer) && range.commonAncestorContainer !== docEl) return null;
+  const out = [];
+  S.doc.turns.forEach((turn, ti) => {
+    const e = S.els.get(turn.id);
+    if (!e || !range.intersectsNode(e.root)) return;
+    let a = -1, b = -1;
+    for (let i = 0; i < e.spans.length; i++) if (range.intersectsNode(e.spans[i])) { if (a < 0) a = i; b = i; }
+    if (a >= 0) out.push({ ti, a, b });
+  });
+  return out.length ? out : null;
+}
+function targetsOfCode(id) {
+  const r = S.codeAt.get(id);
+  return r ? [{ ti: r.ti, a: r.from, b: r.to }] : null;
+}
+
+/* ------------------------------------------------------ the floating bar */
+const bar = $('codebar');
+let barTarget = null;                                                  // {sel: true} or {id: code id}
+function hideBar() { bar.hidden = true; barTarget = null; }
+function barTargets() { return barTarget && (barTarget.id ? targetsOfCode(barTarget.id) : selectedTargets()); }
+function showBar(rect, target, targets) {
+  if (!S.cats.length) return hideBar();
+  barTarget = target;
+  const marked = targets.some(({ ti, a, b }) => { const e = S.els.get(S.doc.turns[ti].id); return e && e.spans.slice(a, b + 1).some(s => s.classList.contains('coded')); });
+  bar.replaceChildren(...S.cats.map((c, k) => {
+    const b = el('button'), sw = el('span', 'sw');
+    b.type = 'button'; b.dataset.cat = c.id; b.style.setProperty('--cc', c.color);
+    b.append(sw, c.name);
+    if (k < 9) b.append(el('kbd', null, String(k + 1)));
+    return b;
+  }));
+  if (marked) {
+    const rm = el('button', 'rm'); rm.type = 'button'; rm.dataset.cat = '';
+    rm.append(icon('eraser', 'xs'), 'הסרת סימון');
+    bar.append(rm);
+  }
+  bar.hidden = false; placeBar(rect);
+}
+function placeBar(rect) {
+  const w = bar.offsetWidth, h = bar.offsetHeight;
+  let top = rect.top - h - 10;
+  if (top < 8) top = Math.min(innerHeight - h - 8, rect.bottom + 10);
+  const left = Math.max(8, Math.min(innerWidth - w - 8, rect.left + rect.width / 2 - w / 2));
+  bar.style.top = top + 'px'; bar.style.left = left + 'px';
+}
+function syncBar() {
+  if (S.pane !== 'codes' || !S.doc) return hideBar();
+  const targets = selectedTargets();
+  if (!targets) return;
+  showBar(getSelection().getRangeAt(0).getBoundingClientRect(), { sel: true }, targets);
+}
+function pickFromBar(catId) {
+  const targets = barTargets();
+  if (!targets) return hideBar();
+  applyCode(catId || null, targets);
+  getSelection().removeAllRanges(); hideBar();
+}
+bar.addEventListener('mousedown', ev => ev.preventDefault());           // keep the selection while clicking the bar
+bar.addEventListener('click', ev => { const b = ev.target.closest('button'); if (b) pickFromBar(b.dataset.cat); });
+document.addEventListener('mouseup', ev => { if (!(ev.target.closest && ev.target.closest('#codebar'))) setTimeout(syncBar, 0); });
+document.addEventListener('keyup', ev => { if (ev.shiftKey || ev.key.startsWith('Arrow')) syncBar(); });
+document.addEventListener('selectionchange', () => { if (barTarget && barTarget.sel && getSelection().isCollapsed) hideBar(); });
+document.addEventListener('pointerdown', ev => { if (!bar.hidden && !(ev.target.closest && ev.target.closest('#codebar, #doc .w.coded'))) { if (getSelection().isCollapsed || !(ev.target.closest && ev.target.closest('#doc'))) hideBar(); } });
+sheet.addEventListener('scroll', () => {
+  if (bar.hidden) return;
+  requestAnimationFrame(() => {
+    const t = barTarget && (barTarget.id ? docEl.querySelector(`.w[data-cid="${barTarget.id}"]`)?.getBoundingClientRect() : getSelection().rangeCount && !getSelection().isCollapsed ? getSelection().getRangeAt(0).getBoundingClientRect() : null);
+    if (!t || t.bottom < 0 || t.top > innerHeight) hideBar(); else placeBar(t);
+  });
+}, { passive: true });
+docEl.addEventListener('click', ev => {                                 // a marked passage: change its category or remove it
+  if (S.pane !== 'codes' || !S.doc) return;
+  const s = ev.target.closest('.w.coded');
+  if (!s || !getSelection().isCollapsed) return;
+  const targets = targetsOfCode(s.dataset.cid);
+  if (targets) showBar(s.getBoundingClientRect(), { id: s.dataset.cid }, targets);
+});
+function keyCode(n) {                                                   // Alt+1..9 from the keyboard
+  const cat = S.cats[n];
+  if (!cat || S.pane !== 'codes') return false;
+  const targets = barTargets() || selectedTargets();
+  if (!targets) return false;
+  applyCode(cat.id, targets); getSelection().removeAllRanges(); hideBar();
+  return true;
+}
+
+/* ------------------------------------------------------- list and legend clicks */
+function goCode(id) {
+  const r = S.codeAt.get(id);
+  S.codeCur = id;
+  for (const li of $('cxs').children) li.classList.toggle('sel', li.firstChild.dataset.cid === id);
+  if (!r) return;
+  const turn = S.doc.turns[r.ti], e = S.els.get(turn.id), w = turn.w.slice(r.from, r.to + 1).find(v => v.s != null);
+  if (w) { releaseHold(); seek(Math.max(0, w.s - 1)); }
+  const first = e && e.spans[r.from];
+  if (first) keepInView(first, true);
+  S.follow = false; $('follow').hidden = !S.flat.length;
+  for (const s of docEl.querySelectorAll(`.w[data-cid="${id}"]`)) { s.classList.remove('flash'); void s.offsetWidth; s.classList.add('flash'); }
+}
+function stepCode(dir) {
+  const list = codeItems().filter(x => x.r && (!S.codeFilter || x.cat.id === S.codeFilter));
+  if (!list.length) return;
+  const i = list.findIndex(x => x.code.id === S.codeCur);
+  goCode(list[i < 0 ? (dir > 0 ? 0 : list.length - 1) : (i + dir + list.length) % list.length].code.id);
+}
+$('cxs').addEventListener('click', ev => {
+  const b = ev.target.closest('.cx');
+  if (!b) return;
+  if (ev.target.closest('[data-act="rm"]')) {
+    const t = targetsOfCode(b.dataset.cid);
+    if (t) applyCode(null, t); else { pushCodeUndo(); S.codes = S.codes.filter(c => c.id !== b.dataset.cid); renderCodes(); scheduleCodeSave(); }
+    return;
+  }
+  goCode(b.dataset.cid);
+});
+$('cats').addEventListener('click', ev => {
+  const row = ev.target.closest('.cat-row');
+  if (!row) return;
+  if (ev.target.closest('[data-act="edit"]')) return openCatForm(row.dataset.cat);
+  S.codeFilter = S.codeFilter === row.dataset.cat ? null : row.dataset.cat;
+  renderCodes();
+});
+$('codeUndo').onclick = codeUndo;
+
+/* ------------------------------------------------------------ category editor */
+function openCatForm(id) {
+  const existing = id ? catOf(id) : null;
+  S.codeEdit = { id: id || null, color: existing ? existing.color : CODE_COLORS[S.cats.length % CODE_COLORS.length], confirmDel: false };
+  const form = $('catForm');
+  const name = el('input'), sw = el('div', 'swatches'), row = el('div', 'frow');
+  name.type = 'text'; name.maxLength = 60; name.placeholder = 'שם הקטגוריה'; name.value = existing ? existing.name : ''; name.setAttribute('aria-label', 'שם הקטגוריה');
+  const paintSw = () => { for (const b of sw.querySelectorAll('button')) b.setAttribute('aria-pressed', String(b.dataset.c === S.codeEdit.color.toLowerCase())); };
+  for (const c of CODE_COLORS) {
+    const b = el('button'); b.type = 'button'; b.dataset.c = c; b.style.setProperty('--cc', c); b.title = c; b.setAttribute('aria-label', 'צבע');
+    b.onclick = () => { S.codeEdit.color = c; paintSw(); };
+    sw.append(b);
+  }
+  const custom = el('input'); custom.type = 'color'; custom.value = S.codeEdit.color; custom.title = 'צבע אחר'; custom.setAttribute('aria-label', 'צבע אחר');
+  custom.oninput = () => { S.codeEdit.color = custom.value; paintSw(); };
+  sw.append(custom);
+  const save = el('button', 'fsave', 'שמירה'), cancel = el('button', null, 'ביטול');
+  save.type = cancel.type = 'button';
+  cancel.onclick = closeCatForm;
+  save.onclick = () => commitCat(name.value);
+  row.append(save, cancel);
+  if (existing) {
+    const del = el('button', 'fdel', 'מחיקה'); del.type = 'button';
+    const n = S.codes.filter(c => c.cat === id).length;
+    del.onclick = () => {
+      if (n && !S.codeEdit.confirmDel) { S.codeEdit.confirmDel = true; del.textContent = `למחוק גם ${n} סימונים? לחיצה נוספת מוחקת`; return; }
+      deleteCat(id);
+    };
+    row.append(del);
+  }
+  form.onsubmit = ev => { ev.preventDefault(); commitCat(name.value); };
+  form.replaceChildren(name, sw, row);
+  form.hidden = false; $('catAdd').hidden = true;
+  paintSw(); name.focus(); name.select();
+}
+function closeCatForm() { S.codeEdit = null; $('catForm').hidden = true; $('catAdd').hidden = false; }
+function commitCat(raw) {
+  const name = raw.replace(/\s+/g, ' ').trim().slice(0, 60);
+  if (!name || !S.codeEdit) return;
+  const { id, color } = S.codeEdit;
+  if (id) { const c = catOf(id); c.name = name; c.color = color; }
+  else S.cats.push({ id: 'c' + Date.now().toString(36), name, color });
+  closeCatForm(); saveCats(); renderCodes();
+}
+function deleteCat(id) {
+  if (S.codes.some(c => c.cat === id)) {
+    pushCodeUndo(); S.codes = S.codes.filter(c => c.cat !== id); scheduleCodeSave();
+  }
+  S.cats = S.cats.filter(c => c.id !== id);
+  if (S.codeFilter === id) S.codeFilter = null;
+  closeCatForm(); saveCats(); renderCodes();
+}
+$('catAdd').onclick = () => openCatForm(null);
+
+/* --------------------------------------------- copy the coded transcript, or save it for Google Docs */
+const softColor = hex => {                                              // the highlight colour as a solid tint, which Word and Docs keep
+  const n = parseInt(hex.slice(1), 16), mix = c => Math.round(c * 0.62 + 255 * 0.38).toString(16).padStart(2, '0');
+  return '#' + mix(n >> 16 & 255) + mix(n >> 8 & 255) + mix(n & 255);
+};
+function codedCopy() {
+  const html = [], text = [], used = new Set();
+  const per = S.doc.turns.map(() => new Map());                         // word index -> category
+  for (const { r, cat } of codeItems()) if (r) { used.add(cat.id); for (let k = r.from; k <= r.to; k++) per[r.ti].set(k, cat); }
+  const cats = S.cats.filter(c => used.has(c.id));
+  html.push('<h2>תמלול מקודד</h2>');
+  html.push('<p><b>מקרא: </b>' + cats.map(c => `<span style="background-color:${softColor(c.color)}">&nbsp;${escHtml(c.name)}&nbsp;</span>`).join(' &nbsp; ') + '</p>');
+  text.push('תמלול מקודד', 'מקרא: ' + cats.map(c => c.name).join(', '), '');
+  S.doc.turns.forEach((turn, ti) => {
+    const runs = [], tx = [];
+    let i = 0;
+    while (i < turn.w.length) {
+      const cat = per[ti].get(i) || null;
+      let j = i;
+      while (j + 1 < turn.w.length && (per[ti].get(j + 1) || null) === cat) j++;
+      const words = wordsText(turn, i, j);
+      runs.push(cat ? `<span style="background-color:${softColor(cat.color)}">${escHtml(words)}</span>` : escHtml(words));
+      tx.push(cat ? `[${words} | ${cat.name}]` : words);
+      i = j + 1;
+    }
+    const label = turn.sp ? `<b>${escHtml(turn.sp)}:</b> ` : '';
+    html.push(`<p>${label}${runs.join(' ')}</p>`);
+    text.push((turn.sp ? turn.sp + ': ' : '') + tx.join(' '), '');
+  });
+  return { html: `<div dir="rtl">${html.join('\n')}</div>`, text: text.join('\n') };
+}
+$('codeCopy').onclick = async () => {
+  if (!S.doc) return;
+  const { html, text } = codedCopy(), b = $('codeCopy'), label = b.querySelector('span');
+  try {
+    await navigator.clipboard.write([new ClipboardItem({
+      'text/html': new Blob([html], { type: 'text/html' }), 'text/plain': new Blob([text], { type: 'text/plain' }) })]);
+  } catch {
+    try { await navigator.clipboard.writeText(text); } catch { label.textContent = 'ההעתקה נכשלה'; return; }
+  }
+  b.classList.add('done'); label.textContent = 'הועתק. אפשר להדביק ב-Word או ב-Docs';
+  setTimeout(() => { b.classList.remove('done'); label.textContent = 'העתקה עם צבעים'; }, 2600);
+};
+function download(filename, mime, data) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([data], { type: mime }));
+  a.download = filename; document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+/* .docx with the colours as highlights. In Google Drive: upload it and open it with Google Docs. */
+$('codeSaveDoc').onclick = async () => {
+  if (!S.doc) return;
+  const btn = $('codeSaveDoc'), label = btn.querySelector('span'), idle = label.textContent, per = S.doc.turns.map(() => new Map());
+  for (const { r, cat } of codeItems()) if (r) for (let k = r.from; k <= r.to; k++) per[r.ti].set(k, cat);
+  const used = new Set(S.doc.turns.flatMap((t, ti) => [...per[ti].values()].map(c => c.id)));
+  const payload = {
+    title: 'תמלול מקודד',
+    legend: S.cats.filter(c => used.has(c.id)).map(c => ({ name: c.name, color: softColor(c.color) })),
+    turns: S.doc.turns.map((t, ti) => ({ sp: t.sp, w: t.w.map((w, i) => ({ t: w.t, c: per[ti].has(i) ? softColor(per[ti].get(i).color) : null })) })),
+  };
+  try {
+    const r = await fetch('/api/docx', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    if (!r.ok) throw new Error(r.status);
+    download('תמלול מקודד - ' + S.name + '.docx', 'application/octet-stream', await r.blob());
+    label.textContent = 'נשמר. העלאה ל-Drive ופתיחה ב-Docs';
+  } catch { label.textContent = 'השמירה נכשלה: להפעיל מחדש את העורך?'; }
+  setTimeout(() => { label.textContent = idle; }, 4000);
+};
+
+/* Coding mode: the transcript is for reading and marking, so typing cannot change it by accident. */
+function applyCodingMode(on) {
+  if (S.codingOn === on) return;
+  S.codingOn = on; docEl.classList.toggle('coding', on);
+  for (const e of S.els.values()) e.p.setAttribute('contenteditable', on ? 'false' : (PLAIN ? 'plaintext-only' : 'true'));
+  if (!on) hideBar();
+}
+function setPane(p) {
+  S.pane = p;
+  const codes = p === 'codes';
+  $('tabSpots').setAttribute('aria-selected', String(!codes)); $('tabCodes').setAttribute('aria-selected', String(codes));
+  $('spots').hidden = codes || !S.spots.length; $('spotsEmpty').hidden = codes || !!S.spots.length || !S.doc;
+  $('codesPane').hidden = !codes;
+  applyCodingMode(codes);
+}
+$('tabSpots').onclick = () => setPane('spots');
+$('tabCodes').onclick = () => setPane('codes');
+addEventListener('beforeunload', () => { if (S.codeDirty) flushCodes(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden && S.codeDirty) flushCodes(); });
+
 /* ------------------------------------------------------- global wiring */
 sheet.addEventListener('wheel', () => { if (S.follow && S.flat.length) setFollow(false); }, { passive: true });
 sheet.addEventListener('pointerdown', ev => { if (ev.target === sheet && S.follow && S.flat.length) setFollow(false); });
@@ -1814,15 +2394,19 @@ document.addEventListener('keydown', ev => {
   const target = ev.target instanceof Element ? ev.target : document.body;
   const mod = ev.ctrlKey || ev.metaKey;
   if (ev.key === 'Escape' && !$('settings').hidden) { ev.preventDefault(); togglePop(false); return; }
+  if (ev.key === 'Escape' && !bar.hidden) { ev.preventDefault(); hideBar(); return; }
   if (!$('addDlg').hidden || !$('askDlg').hidden) return;                       // a dialog is open: leave its keys alone
   if (ev.key === 'Escape' || (mod && ev.code === 'Space')) { ev.preventDefault(); togglePlay(); }
   else if (ev.code === 'Space' && !target.closest('.txt, input, textarea, button, summary')) { ev.preventDefault(); togglePlay(); }
+  else if (ev.altKey && /^Digit[1-9]$/.test(ev.code) && S.pane === 'codes') { if (keyCode(+ev.code.slice(5) - 1)) ev.preventDefault(); }
   else if (ev.altKey && ev.key === 'ArrowLeft') { ev.preventDefault(); seek(audio.currentTime - 3); }
   else if (ev.altKey && ev.key === 'ArrowRight') { ev.preventDefault(); seek(audio.currentTime + 3); }
   else if (ev.altKey && ev.key === 'ArrowDown') { ev.preventDefault(); step(1); }
   else if (ev.altKey && ev.key === 'ArrowUp') { ev.preventDefault(); step(-1); }
   else if (mod && ev.code === 'KeyS') { ev.preventDefault(); if (S.dirty) save(); }
+  else if (mod && ev.code === 'KeyZ' && S.pane === 'codes') { ev.preventDefault(); codeUndo(); }
   else if (mod && ev.code === 'KeyZ' && S.doc) { ev.preventDefault(); ev.shiftKey ? redo() : undo(); }
+  else if (mod && ev.code === 'KeyY' && S.pane === 'codes') { ev.preventDefault(); }
   else if (mod && ev.code === 'KeyY' && S.doc) { ev.preventDefault(); redo(); }
 }, true);
 
@@ -1831,6 +2415,7 @@ document.addEventListener('keydown', ev => {
   setRate(RATES.includes(opts.rate) ? opts.rate : 1);
   renderSpots();
   try { S.list = await api.list(); } catch { S.list = []; }
+  await loadCats();
   renderTabs();
   api.status().then(st => {
     if (!st.model) showNotice('bad', 'חסרה תיקיית המודל (model) ליד העורך, ולכן אי אפשר לתמלל. התקינו את העורך מחדש.');

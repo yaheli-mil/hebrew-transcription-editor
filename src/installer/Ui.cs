@@ -14,12 +14,12 @@ using System.Windows.Forms;
 [assembly: AssemblyCompany("יהלי מילרמן")]
 [assembly: AssemblyProduct("עורך תמלול")]
 [assembly: AssemblyCopyright("© יהלי מילרמן")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.1.0.0")]
+[assembly: AssemblyFileVersion("1.1.0.0")]
 
 static class Theme
 {
-    public const string Version = "1.0";
+    public const string Version = "1.1";
     public const string AppName = "עורך תמלול";
     public const string Credit = "יהלי מילרמן";
     public const string Instagram = "https://www.instagram.com/yali.millerman/";

@@ -498,3 +498,153 @@ def save_doc(name, turns, base_sha, force=False):
             "duration": duration_of(name), "turns": clean,
         })
         return new_sha
+
+
+# ---------------------------------------------------------------- coding
+# The user marks passages by topic, one colour per category (the legend). A mark is stored as the marked words plus
+# a hint of where they were, and is found again by its words, so edits around it are safe. Not a cache: keep.
+
+CODES_KEEP = 40          # history copies kept per file
+CODES_EVERY = 300        # seconds between history copies while marking
+_HEX = re.compile(r"^#[0-9a-fA-F]{6}$")
+
+
+def categories_path():
+    return DATA / "_categories.json"
+
+
+def codes_path(name):
+    return DATA / f"{name}.codes.json"
+
+
+def _history(path):
+    """Keep dated copies of a coding file: it is hours of the user's own work."""
+    if not path.exists():
+        return
+    hist = DATA / "codes-history"
+    last = sorted(hist.glob(f"{path.stem} *.json"))[-1:] if hist.exists() else []
+    if last and time.time() - last[0].stat().st_mtime < CODES_EVERY:
+        return
+    hist.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(path, hist / f"{path.stem} {time.strftime('%Y-%m-%d %H.%M.%S')}.json")
+    for p in sorted(hist.glob(f"{path.stem} *.json"))[:-CODES_KEEP]:
+        p.unlink(missing_ok=True)
+
+
+def _clean_text(v, limit):
+    return " ".join(str(v or "").split())[:limit]
+
+
+def read_categories():
+    """The legend: [{id, name, color}]. First use starts from a few example categories."""
+    d = read_json(categories_path())
+    if isinstance(d, dict) and isinstance(d.get("categories"), list):
+        return d["categories"]
+    return [
+        {"id": "c1", "name": "רגשות", "color": "#f2c230"},
+        {"id": "c2", "name": "מחשבות", "color": "#4f9cf2"},
+        {"id": "c3", "name": "משפחה", "color": "#43bd78"},
+        {"id": "c4", "name": "חברה", "color": "#a56ee6"},
+        {"id": "c5", "name": "ציטוט בולט", "color": "#f0813a"},
+    ]
+
+
+def save_categories(cats):
+    clean, seen = [], set()
+    for c in cats[:60] if isinstance(cats, list) else []:
+        cid, name, color = _clean_text(c.get("id"), 40), _clean_text(c.get("name"), 60), c.get("color")
+        if cid and name and cid not in seen and isinstance(color, str) and _HEX.match(color):
+            seen.add(cid)
+            clean.append({"id": cid, "name": name, "color": color.lower()})
+    with _file_locks["codes:cats"]:
+        _history(categories_path())
+        write_atomic(categories_path(), json.dumps({"categories": clean}, ensure_ascii=False, indent=1).encode("utf-8"))
+    return clean
+
+
+def read_codes(name):
+    d = read_json(codes_path(name))
+    return d.get("codes", []) if isinstance(d, dict) else []
+
+
+def save_codes(name, codes):
+    """codes: [{id, cat, quote, turn, at}] -- `quote` the marked words, `turn`/`at` hints of where they were."""
+    clean, seen = [], set()
+    for c in codes[:5000] if isinstance(codes, list) else []:
+        cid, cat, quote = _clean_text(c.get("id"), 40), _clean_text(c.get("cat"), 40), _clean_text(c.get("quote"), 6000)
+        if not (cid and cat and quote) or cid in seen:
+            continue
+        seen.add(cid)
+        turn, at = c.get("turn"), c.get("at")
+        clean.append({"id": cid, "cat": cat, "quote": quote,
+                      "turn": turn if isinstance(turn, int) and turn >= 0 else 0,
+                      "at": at if isinstance(at, int) and at >= 0 else 0})
+    with _file_locks["codes:" + name]:
+        _history(codes_path(name))
+        write_atomic(codes_path(name), json.dumps({"codes": clean}, ensure_ascii=False, indent=1).encode("utf-8"))
+    return len(clean)
+
+
+# ---------------------------------------------------------------- docx export
+# A coded transcript as a .docx: the colour highlights are run shading. Google Docs keeps them when the file
+# is uploaded to Drive and opened with Google Docs.
+
+def _x(s):
+    return str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+
+
+def build_docx(payload):
+    import io
+    import zipfile
+
+    def color(c):
+        return c.lstrip("#").upper() if isinstance(c, str) and _HEX.match(c) else None
+
+    def run(text, fill=None, bold=False, size=None):
+        pr = "<w:rtl/>" + ("<w:b/><w:bCs/>" if bold else "") + (f'<w:sz w:val="{size}"/><w:szCs w:val="{size}"/>' if size else "")
+        if fill:
+            pr += f'<w:shd w:val="clear" w:color="auto" w:fill="{fill}"/>'
+        return f'<w:r><w:rPr>{pr}</w:rPr><w:t xml:space="preserve">{_x(text)}</w:t></w:r>'
+
+    def para(inner):
+        return f'<w:p><w:pPr><w:bidi/><w:spacing w:after="160" w:line="360" w:lineRule="auto"/></w:pPr>{inner}</w:p>'
+
+    body = [para(run(_clean_text(payload.get("title"), 80) or "תמלול מקודד", bold=True, size=28))]
+    legend = [l for l in (payload.get("legend") or [])[:60] if color(l.get("color"))]
+    if legend:
+        body.append(para(run("מקרא: ", bold=True) + "".join(run(" " + str(l.get("name"))[:60] + " ", color(l["color"])) + run("   ") for l in legend)))
+    for turn in (payload.get("turns") or [])[:5000]:
+        inner = run(str(turn.get("sp") or "")[:40] + ": ", bold=True) if turn.get("sp") else ""
+        words = (turn.get("w") or [])[:20000]
+        for i, w in enumerate(words):
+            fill = color(w.get("c"))
+            inner += run(str(w.get("t") or ""), fill)
+            if i + 1 < len(words):
+                nxt = color(words[i + 1].get("c"))
+                inner += run(" ", fill if fill and fill == nxt else None)
+        body.append(para(inner))
+
+    ns = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"'
+    document = (f'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document {ns}><w:body>' + "".join(body)
+                + '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" '
+                  'w:header="708" w:footer="708" w:gutter="0"/><w:bidi/></w:sectPr></w:body></w:document>')
+    styles = (f'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles {ns}><w:docDefaults><w:rPrDefault><w:rPr>'
+              '<w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/><w:sz w:val="22"/><w:szCs w:val="22"/><w:lang w:bidi="he-IL"/>'
+              '</w:rPr></w:rPrDefault></w:docDefaults></w:styles>')
+    types = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+             '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+             '<Default Extension="xml" ContentType="application/xml"/>'
+             '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>'
+             '<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>')
+    rels = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+            '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>')
+    drels = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+             '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>')
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+        z.writestr("[Content_Types].xml", types)
+        z.writestr("_rels/.rels", rels)
+        z.writestr("word/document.xml", document)
+        z.writestr("word/_rels/document.xml.rels", drels)
+        z.writestr("word/styles.xml", styles)
+    return buf.getvalue()

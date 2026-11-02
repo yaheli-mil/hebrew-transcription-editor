@@ -28,7 +28,7 @@ MAX_UPLOAD = 6 * 1024 ** 3
 CSP = ("default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; "
        "connect-src 'self'; media-src 'self'; img-src 'self' data:; font-src 'self'; base-uri 'none'; form-action 'none'")
 FONT_TYPES = {".ttf": "font/ttf", ".otf": "font/otf", ".woff2": "font/woff2"}
-DATA_SUFFIXES = (".words.json", ".env.u8", ".sync.json", ".progress.json", ".job.json", ".error.json")
+DATA_SUFFIXES = (".words.json", ".env.u8", ".sync.json", ".progress.json", ".job.json", ".error.json", ".codes.json")
 BAD_CHARS = re.compile(r'[<>:"/\\|?*\x00-\x1f]')
 
 
@@ -222,11 +222,15 @@ class Handler(BaseHTTPRequestHandler):
                 self._json({"model": core.model_ok(), "folder": str(core.ROOT)})
             elif url.path == "/api/list":
                 self._json({"recordings": list_recordings()})
+            elif url.path == "/api/categories":
+                self._json({"categories": core.read_categories()})
             elif name not in core.recordings():
                 self._send(404)
             elif url.path == "/api/doc":
                 doc = core.load_doc(name)
                 self._json(doc) if doc else self._json({"error": "no_txt"}, 404)
+            elif url.path == "/api/codes":
+                self._json({"codes": core.read_codes(name)})
             elif url.path == "/api/peaks":
                 self._json(core.peaks(name, int((query.get("n") or ["1200"])[0])))
             elif url.path == "/audio":
@@ -320,6 +324,10 @@ class Handler(BaseHTTPRequestHandler):
             if url.path == "/api/open-folder":
                 os.startfile(str(core.ROOT))
                 return self._json({"ok": True})
+            if url.path == "/api/docx":
+                return self._send(200, core.build_docx(req), "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+            if url.path == "/api/categories":
+                return self._json({"categories": core.save_categories(req.get("categories"))})
             name = req.get("name")
             if name not in core.recordings():
                 return self._send(404)
@@ -330,6 +338,8 @@ class Handler(BaseHTTPRequestHandler):
                 core.error_path(name).unlink(missing_ok=True)
                 QUEUE.wake.set()
                 return self._json({"ok": True})
+            if url.path == "/api/codes":
+                return self._json({"saved": core.save_codes(name, req.get("codes"))})
             if url.path != "/api/save":
                 return self._send(404)
             try:
